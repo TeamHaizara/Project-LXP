@@ -1,4 +1,4 @@
-package com.example.projectlxp.service;
+package com.example.projectlxp.service.course;
 
 import org.springframework.stereotype.Service;
 

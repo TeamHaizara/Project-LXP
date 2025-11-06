@@ -1,4 +1,4 @@
-package com.example.projectlxp.repository;
+package com.example.projectlxp.repository.course;
 
 import org.springframework.stereotype.Repository;
 
