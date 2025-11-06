@@ -112,7 +112,8 @@ public class CourseService {
         course.softDelete();
         course.getSections().forEach(section -> {
             section.softDelete();
-            section.getLectures().forEach(lecture -> lecture.softDelete());
+            // TODO: lecture.softDelete() 구현 후 cascade delete 활성화
+            // section.getLectures().forEach(lecture -> lecture.softDelete());
         });
 
         courseRepository.save(course);
