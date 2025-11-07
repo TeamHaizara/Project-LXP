@@ -44,4 +44,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     // 특정 코스의 모든 렉처 조회 (섹션을 통해 조인)
     @Query("SELECT l FROM Lecture l JOIN l.section s WHERE s.course.id = :courseId AND l.deletedAt IS NULL AND s.deletedAt IS NULL ORDER BY s.order ASC, l.order ASC")
     List<Lecture> findAllByCourseIdAndNotDeleted(@Param("courseId") Long courseId);
+
+    // id 리스트를 통해 삭제 되지 않은 렉처 조회
+    List<Lecture> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
+
 }

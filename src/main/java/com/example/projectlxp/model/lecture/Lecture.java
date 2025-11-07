@@ -1,5 +1,6 @@
 package com.example.projectlxp.model.lecture;
 
+import com.example.projectlxp.service.lecture.dto.LectureUpdateRequestDTO;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ public class Lecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
 
@@ -60,15 +61,23 @@ public class Lecture {
     }
 
     // Constructors
-    public Lecture() {
+    protected Lecture() {
     }
 
-    public Lecture(Section section, String title, String description, Integer order, LectureType type) {
+    public Lecture(Section section, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
         this.section = section;
         this.title = title;
         this.description = description;
         this.order = order;
         this.type = type;
+        this.resourcePath = resourcePath;
+        this.duration = duration;
+        this.isPreviewable = isPreviewable;
+    }
+
+    public static Lecture forCreate(Section section, String title, String description, Integer order, LectureType type,String resourcePath, Integer duration, Boolean isPreviewable) {
+
+        return new Lecture(section, title, description, order, type, resourcePath, duration, isPreviewable);
     }
 
     // Soft delete method
@@ -76,6 +85,37 @@ public class Lecture {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void updateDetails(LectureUpdateRequestDTO requestDTO) {
+        if (title != null) {
+            this.title = requestDTO.getTitle();
+        }
+        if (description != null) {
+            this.description = requestDTO.getDescription();
+        }
+        if (type != null) {
+            this.type = requestDTO.getType();
+        }
+        if (resourcePath != null) {
+            this.resourcePath = requestDTO.getResourcePath();
+        }
+        if (duration != null) {
+            this.duration = requestDTO.getDuration();
+        }
+        if (isPreviewable != null) {
+            this.isPreviewable = requestDTO.getIsPreviewable();
+        }
+    }
+
+    public void updateOrder(Integer order) {
+        if (order < 0) {
+            throw new LectureOrderBoundException("정렬 순서는 0보다 작을 수 없습니다.");
+        }
+
+        if (this.deletedAt != null) {
+            throw new LectureAlreadyDeletedException("삭제된 강의의 순서는 변경할 수 없습니다.");
+        }
+        setOrder(order);
+    }
     public boolean isDeleted() {
         return deletedAt != null;
     }
@@ -85,7 +125,7 @@ public class Lecture {
         return id;
     }
 
-    public void setId(Long id) {
+    protected void setId(Long id) {
         this.id = id;
     }
 
@@ -93,7 +133,7 @@ public class Lecture {
         return section;
     }
 
-    public void setSection(Section section) {
+    protected void setSection(Section section) {
         this.section = section;
     }
 
@@ -101,7 +141,7 @@ public class Lecture {
         return title;
     }
 
-    public void setTitle(String title) {
+    protected void setTitle(String title) {
         this.title = title;
     }
 
@@ -109,7 +149,7 @@ public class Lecture {
         return description;
     }
 
-    public void setDescription(String description) {
+    protected void setDescription(String description) {
         this.description = description;
     }
 
@@ -117,7 +157,7 @@ public class Lecture {
         return order;
     }
 
-    public void setOrder(Integer order) {
+    protected void setOrder(Integer order) {
         this.order = order;
     }
 
@@ -125,7 +165,7 @@ public class Lecture {
         return type;
     }
 
-    public void setType(LectureType type) {
+    protected void setType(LectureType type) {
         this.type = type;
     }
 
@@ -133,15 +173,11 @@ public class Lecture {
         return resourcePath;
     }
 
-    public void setResourcePath(String resourcePath) {
-        this.resourcePath = resourcePath;
-    }
-
     public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Integer duration) {
+    protected void setDuration(Integer duration) {
         this.duration = duration;
     }
 
@@ -149,7 +185,15 @@ public class Lecture {
         return isPreviewable;
     }
 
-    public void setIsPreviewable(Boolean isPreviewable) {
+    protected void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath;
+    }
+
+    protected void setPreviewable(Boolean previewable) {
+        isPreviewable = previewable;
+    }
+
+    protected void setIsPreviewable(Boolean isPreviewable) {
         this.isPreviewable = isPreviewable;
     }
 
@@ -157,24 +201,8 @@ public class Lecture {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
-
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
     }
 
     @Override
