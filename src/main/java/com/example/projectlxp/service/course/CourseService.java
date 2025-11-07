@@ -79,6 +79,17 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
+    // 여러 ID로 코스 목록 조회 (수강 중인 코스 목록용)
+    public List<CourseListResponseDTO> getCoursesByIds(List<Long> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return List.of();
+        }
+        
+        return courseRepository.findByIdsAndNotDeleted(courseIds).stream()
+                .map(CourseListResponseDTO::from)
+                .collect(Collectors.toList());
+    }
+
     // 코스 수정
     @Transactional
     public CourseDetailResponseDTO updateCourse(Long id, CourseUpdateRequestDTO requestDTO) {
