@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/course")
+@RequestMapping("/api/courses")
 public class CourseController {
 
     private final CourseService courseService;
@@ -42,7 +42,7 @@ public class CourseController {
     }
 
     // 강사별 코스 조회
-    @GetMapping("/instructor/{instructor_id}")
+    @GetMapping("/instructors/{instructor_id}")
     public ResponseEntity<List<CourseListResponseDTO>> getCoursesByInstructor(
             @PathVariable("instructor_id") Long instructorId
     ) {
@@ -51,7 +51,7 @@ public class CourseController {
     }
 
     // 카테고리별 코스 조회
-    @GetMapping("/category/{category_id}")
+    @GetMapping("/categories/{category_id}")
     public ResponseEntity<List<CourseListResponseDTO>> getCoursesByCategory(
             @PathVariable("category_id") Long categoryId
     ) {
