@@ -27,4 +27,13 @@ public class BusinessException extends RuntimeException {
         this.httpStatus = httpStatus;
         this.message = message;
     }
+
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
 }
