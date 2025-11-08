@@ -1,7 +1,7 @@
 package com.example.projectlxp.service.enroll;
 
-import com.example.projectlxp.controller.BusinessException;
-import com.example.projectlxp.controller.ExceptionCode;
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
 import com.example.projectlxp.service.enroll.dto.EnrollCourseServiceDto;
