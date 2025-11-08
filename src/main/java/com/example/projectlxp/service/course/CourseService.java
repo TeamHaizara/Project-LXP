@@ -1,7 +1,7 @@
 package com.example.projectlxp.service.course;
 
-import com.example.projectlxp.Exception.BusinessException;
-import com.example.projectlxp.Exception.ExceptionCode;
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 import com.example.projectlxp.repository.course.CourseRepository;
