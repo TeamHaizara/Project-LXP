@@ -1,4 +1,4 @@
-package com.example.projectlxp.exception;
+package com.example.projectlxp.controller;
 
 
 import org.springframework.http.HttpStatus;

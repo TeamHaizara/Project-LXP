@@ -1,7 +1,6 @@
-package com.example.projectlxp.exception;
+package com.example.projectlxp.controller;
 
 import org.springframework.http.HttpStatus;
-import com.example.projectlxp.exception.ExceptionCode;
 
 public class BusinessException extends RuntimeException {
     private final HttpStatus httpStatus;

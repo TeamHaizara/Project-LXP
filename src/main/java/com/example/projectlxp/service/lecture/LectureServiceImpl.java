@@ -1,7 +1,7 @@
 package com.example.projectlxp.service.lecture;
 
-import com.example.projectlxp.exception.LectureNotFoundException;
-import com.example.projectlxp.exception.SectionNotFoundException;
+import com.example.projectlxp.tmp.LectureNotFoundException;
+import com.example.projectlxp.tmp.SectionNotFoundException;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;

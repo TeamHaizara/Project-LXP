@@ -1,7 +1,7 @@
 package com.example.projectlxp.model.enroll;
 
-import com.example.projectlxp.exception.BusinessException;
-import com.example.projectlxp.exception.ExceptionCode;
+import com.example.projectlxp.controller.BusinessException;
+import com.example.projectlxp.controller.ExceptionCode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
