@@ -146,4 +146,5 @@ public class LectureServiceImpl implements LectureService{
             lecture.updateOrder(i+1);
         }
     }
+
 }
