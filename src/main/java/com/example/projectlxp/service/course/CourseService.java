@@ -5,7 +5,10 @@ import com.example.projectlxp.Exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 import com.example.projectlxp.repository.course.CourseRepository;
-import com.example.projectlxp.service.course.dto.*;
+import com.example.projectlxp.service.course.dto.CourseCreateRequestDTO;
+import com.example.projectlxp.service.course.dto.CourseDetailResponseDTO;
+import com.example.projectlxp.service.course.dto.CourseListResponseDTO;
+import com.example.projectlxp.service.course.dto.CourseUpdateRequestDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +35,6 @@ public class CourseService {
                 requestDTO.getDescription(),
                 requestDTO.getPrice()
         );
-
         Course savedCourse = courseRepository.save(course);
         return CourseDetailResponseDTO.from(savedCourse);
     }
@@ -67,12 +69,7 @@ public class CourseService {
 
     // 상태별 코스 조회
     public List<CourseListResponseDTO> getCoursesByStatus(String status) {
-        CourseStatus courseStatus;
-        try {
-            courseStatus = CourseStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException(ExceptionCode.COURSE_NOT_FOUND, null);
-        }
+        CourseStatus courseStatus = CourseStatus.from(status);
         return courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
                 .map(CourseListResponseDTO::from)
                 .collect(Collectors.toList());
@@ -90,7 +87,6 @@ public class CourseService {
         if (courseIds == null || courseIds.isEmpty()) {
             return List.of();
         }
-        
         return courseRepository.findByIdsAndNotDeleted(courseIds).stream()
                 .map(CourseListResponseDTO::from)
                 .collect(Collectors.toList());
@@ -101,64 +97,42 @@ public class CourseService {
     public CourseDetailResponseDTO updateCourse(Long id, CourseUpdateRequestDTO requestDTO) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-
         course.updateBasicInfo(
-            requestDTO.getTitle(),
-            requestDTO.getDescription(),
-            requestDTO.getPrice(),
-            requestDTO.getCategoryId()
+                requestDTO.getTitle(),
+                requestDTO.getDescription(),
+                requestDTO.getPrice(),
+                requestDTO.getCategoryId()
         );
-
-        Course updatedCourse = courseRepository.save(course);
-        return CourseDetailResponseDTO.from(updatedCourse);
+        return CourseDetailResponseDTO.from(course);
     }
 
-    // 코스 삭제 (Soft Delete)
-    @Transactional
-    public void deleteCourse(Long id) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-
-        // Soft delete: Course와 하위 Section, Lecture도 모두 soft delete
-        course.softDelete();
-        course.getSections().forEach(section -> {
-            section.softDelete();
-            section.getLectures().forEach(lecture -> lecture.softDelete());
-        });
-
-        courseRepository.save(course);
-    }
-
-    // 코스 상태 변경
-    @Transactional
-    public CourseDetailResponseDTO changeCourseStatus(Long id, CourseStatus newStatus) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-
-        course.changeStatus(newStatus);
-        Course updatedCourse = courseRepository.save(course);
-        return CourseDetailResponseDTO.from(updatedCourse);
-    }
-
-    // 코스 발행 (DRAFT/ARCHIVED -> PUBLISHED)
+    // 코스 발행
     @Transactional
     public CourseDetailResponseDTO publishCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-
-        course.publish();
-        Course updatedCourse = courseRepository.save(course);
-        return CourseDetailResponseDTO.from(updatedCourse);
+        course.toPublished();
+        return CourseDetailResponseDTO.from(course);
     }
 
-    // 코스 아카이빙 (DRAFT/PUBLISHED -> ARCHIVED)
+    // 코스 아카이빙
     @Transactional
     public CourseDetailResponseDTO archiveCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-
-        course.archive();
-        Course updatedCourse = courseRepository.save(course);
-        return CourseDetailResponseDTO.from(updatedCourse);
+        course.toArchived();
+        return CourseDetailResponseDTO.from(course);
     }
+
+    // 코스 삭제
+    @Transactional
+    public void deleteCourse(Long id) {
+        Course course = courseRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+        // TODO: Enrollment 엔티티 구현 후 enrolled user 수 조회
+        int enrolledUserCount = 0; // enrollmentRepository.countByCourseId(id);
+        course.cascadeSoftDelete();
+        course.toDeleted(enrolledUserCount);
+    }
+
 }

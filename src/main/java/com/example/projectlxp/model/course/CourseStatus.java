@@ -1,5 +1,9 @@
 package com.example.projectlxp.model.course;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public enum CourseStatus {
 
     DELETED("완전히 삭제되어 조회 불가한 상태"),
@@ -13,4 +17,52 @@ public enum CourseStatus {
         this.description = description;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    // 문자열에서 CourseStatus로 변환
+    public static CourseStatus from(String status) {
+        if (status == null || status.isBlank()) {
+            // TODO - use custom exception
+            throw new IllegalArgumentException("상태 값은 null이거나 공백일 수 없습니다.");
+        }
+        try {
+            return CourseStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // TODO - use custom exception
+            throw new IllegalArgumentException("유효하지 않은 코스 상태입니다: " + status);
+        }
+    }
+
+    /**
+     * 상태 전이 가능 여부 검증
+     * 1. DRAFT → PUBLISHED or DELETED
+     * 2. PUBLISHED ↔ ARCHIVED (양방향)
+     * 3. ARCHIVED → DELETED
+     * 4. DELETED: 최종 상태, 다른 상태로 전이 불가
+     */
+    public boolean canTransitionTo(CourseStatus newStatus) {
+        if ((newStatus == null) || (this == DELETED)) {
+            return false;
+        }
+        return switch (this) {
+            case DRAFT -> newStatus == PUBLISHED || newStatus == DELETED;
+            case PUBLISHED -> newStatus == ARCHIVED || newStatus == DELETED;
+            case ARCHIVED -> newStatus == PUBLISHED || newStatus == DELETED;
+            case DELETED -> false;
+        };
+    }
+
+    /**
+     * 현재 상태에서 전이 가능한 상태들 반환
+     */
+    public Set<CourseStatus> getAvailableTransitions() {
+        return switch (this) {
+            case DRAFT -> new HashSet<>(Arrays.asList(PUBLISHED, DELETED));
+            case PUBLISHED -> new HashSet<>(Arrays.asList(ARCHIVED, DELETED));
+            case ARCHIVED -> new HashSet<>(Arrays.asList(PUBLISHED, DELETED));
+            case DELETED -> new HashSet<>();
+        };
+    }
 }

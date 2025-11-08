@@ -1,5 +1,6 @@
 package com.example.projectlxp.model.course;
 
+import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
 
@@ -69,13 +70,21 @@ public class Course {
         this.price = price != null ? price : 0;
     }
 
-    // Soft delete method
+    // Soft delete
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
 
     public boolean isDeleted() {
         return deletedAt != null;
+    }
+
+    public void cascadeSoftDelete() {
+        this.softDelete();
+        this.sections.forEach(section -> {
+            section.softDelete();
+            section.getLectures().forEach(Lecture::softDelete);
+        });
     }
 
     // Business logic methods
@@ -94,27 +103,46 @@ public class Course {
         }
     }
 
-    public void changeStatus(CourseStatus newStatus) {
+    // PUBLISHED로 상태 전이
+    public void toPublished() {
+        transitionTo(CourseStatus.PUBLISHED);
+    }
+
+    // ARCHIVED로 상태 전이
+    public void toArchived() {
+        transitionTo(CourseStatus.ARCHIVED);
+    }
+
+    // DELETED로 상태 전이 (enrolled user == 0)
+    public void toDeleted(int enrolledUserCount) {
+        if (enrolledUserCount > 0) {
+            // TODO: use custom exception
+            throw new IllegalStateException(
+                    String.format("등록된 학생이 %d명 있어서 삭제할 수 없습니다", enrolledUserCount)
+            );
+        }
+        transitionTo(CourseStatus.DELETED);
+    }
+
+    // 상태 전이 메서드
+    private void transitionTo(CourseStatus newStatus) {
         validateStatusTransition(newStatus);
         this.status = newStatus;
     }
 
-    public void publish() {
-        changeStatus(CourseStatus.PUBLISHED);
-    }
-
-    public void archive() {
-        changeStatus(CourseStatus.ARCHIVED);
-    }
-
+    // 상태 전이 규칙 검증 (도메인 규칙만 확인, 사전 조건은 미포함)
     private void validateStatusTransition(CourseStatus newStatus) {
-        if (this.status == CourseStatus.DELETED) {
-            throw new IllegalStateException("삭제된 코스의 상태는 변경할 수 없습니다.");
+        if (newStatus == null) {
+            // TODO: use custom exception
+            throw new IllegalArgumentException("상태는 null일 수 없습니다.");
         }
-        // 추가 검증 로직이 필요하면 여기에 구현
-        // DRAFT -> PUBLISHED, ARCHIVED 가능
-        // PUBLISHED -> ARCHIVED 가능
-        // ARCHIVED -> PUBLISHED 가능 (재개설)
+
+        if (!this.status.canTransitionTo(newStatus)) {
+            // TODO: use custom exception
+            throw new IllegalStateException(
+                    String.format("상태 전이가 불가능합니다: %s -> %s", this.status, newStatus)
+            );
+        }
     }
 
     // Getters
@@ -160,17 +188,6 @@ public class Course {
 
     public List<Section> getSections() {
         return sections;
-    }
-
-    // Helper methods
-    public void addSection(Section section) {
-        sections.add(section);
-        section.setCourse(this);
-    }
-
-    public void removeSection(Section section) {
-        sections.remove(section);
-        section.setCourse(null);
     }
 
     @Override
