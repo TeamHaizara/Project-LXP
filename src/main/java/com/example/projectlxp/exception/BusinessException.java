@@ -33,6 +33,11 @@ public class BusinessException extends RuntimeException {
         this.httpStatus = exceptionCode.getStatus();
     }
 
+    public BusinessException(ErrorCode exceptionCode, String param1, String param2){
+        this.message = String.format(exceptionCode.getMessage(), param1, param2);
+        this.httpStatus = exceptionCode.getStatus();
+    }
+
     public HttpStatus getHttpStatus() {
         return httpStatus;
     }

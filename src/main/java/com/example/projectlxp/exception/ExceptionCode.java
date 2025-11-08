@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionCode implements ErrorCode {
     // Course
     COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "Course not found with id: %d"),
-    COURSE_HAS_ENROLLED_STUDENTS(HttpStatus.CONFLICT, "Cannot delete course with %d enrolled students."),
+    COURSE_HAS_ENROLLED_STUDENTS(HttpStatus.UNPROCESSABLE_ENTITY, "Cannot delete course with %d enrolled students."),
     COURSE_STATUS_NULL(HttpStatus.BAD_REQUEST, "Course status cannot be null or blank."),
     INVALID_COURSE_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "Invalid status transition: %s -> %s"),
     INVALID_COURSE_STATUS(HttpStatus.BAD_REQUEST, "Invalid course status: %s"),

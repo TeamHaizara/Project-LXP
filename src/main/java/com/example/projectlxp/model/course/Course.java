@@ -137,7 +137,7 @@ public class Course {
         }
 
         if (!this.status.canTransitionTo(newStatus)) {
-            throw new BusinessException(INVALID_COURSE_STATUS_TRANSITION, (long) this.status.ordinal(), (long) newStatus.ordinal());
+            throw new BusinessException(INVALID_COURSE_STATUS_TRANSITION, this.status.name(), newStatus.name());
         }
     }
 
