@@ -21,9 +21,11 @@ import java.util.stream.Collectors;
 public class CourseService {
 
     private final CourseRepository courseRepository;
+    private final EnrolledCourseRepository enrolledCourseRepository;
 
-    public CourseService(CourseRepository courseRepository) {
+    public CourseService(CourseRepository courseRepository, EnrolledCourseRepository enrolledCourseRepository) {
         this.courseRepository = courseRepository;
+        this.enrolledCourseRepository = enrolledCourseRepository;
     }
 
     // 코스 생성
@@ -130,8 +132,7 @@ public class CourseService {
     public void deleteCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-        // TODO: Enrollment 엔티티 구현 후 enrolled user 수 조회
-        int enrolledUserCount = 0; // enrollmentRepository.countByCourseId(id);
+        int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
         course.cascadeSoftDelete();
         course.toDeleted(enrolledUserCount);
     }
