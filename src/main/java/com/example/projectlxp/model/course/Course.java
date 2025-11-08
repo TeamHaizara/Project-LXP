@@ -5,11 +5,11 @@ import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
 
-import static com.example.projectlxp.exception.ExceptionCode.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.projectlxp.exception.ExceptionCode.*;
 
 @Entity
 @Table(name = "courses")

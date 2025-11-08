@@ -5,7 +5,7 @@ import com.example.projectlxp.model.course.CourseStatus;
 
 import java.time.LocalDateTime;
 
-public class CourseListResponseDTO {
+public class CourseListResponse {
 
     private Long id;
     private Long instructorId;
@@ -17,7 +17,7 @@ public class CourseListResponseDTO {
     private LocalDateTime updatedAt;
 
     // Constructors
-    public CourseListResponseDTO(Long id, Long instructorId, Long categoryId, String title, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CourseListResponse(Long id, Long instructorId, Long categoryId, String title, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.instructorId = instructorId;
         this.categoryId = categoryId;
@@ -29,8 +29,8 @@ public class CourseListResponseDTO {
     }
 
     // Factory method
-    public static CourseListResponseDTO from(Course course) {
-        return new CourseListResponseDTO(
+    public static CourseListResponse from(Course course) {
+        return new CourseListResponse(
                 course.getId(),
                 course.getInstructorId(),
                 course.getCategoryId(),

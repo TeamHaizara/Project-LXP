@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CourseDetailResponseDTO {
+public class CourseDetailResponse {
 
     private Long id;
     private Long instructorId;
@@ -22,7 +22,7 @@ public class CourseDetailResponseDTO {
     private List<SectionResponseDTO> sections;
 
     // Constructor
-    public CourseDetailResponseDTO(Long id, Long instructorId, Long categoryId, String title, String description, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, List<SectionResponseDTO> sections) {
+    public CourseDetailResponse(Long id, Long instructorId, Long categoryId, String title, String description, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, List<SectionResponseDTO> sections) {
         this.id = id;
         this.instructorId = instructorId;
         this.categoryId = categoryId;
@@ -36,13 +36,13 @@ public class CourseDetailResponseDTO {
     }
 
     // Factory method
-    public static CourseDetailResponseDTO from(Course course) {
+    public static CourseDetailResponse from(Course course) {
         List<SectionResponseDTO> sections = course.getSections().stream()
                 .filter(section -> !section.isDeleted())
                 .map(SectionResponseDTO::from)
                 .collect(Collectors.toList());
 
-        return new CourseDetailResponseDTO(
+        return new CourseDetailResponse(
                 course.getId(),
                 course.getInstructorId(),
                 course.getCategoryId(),

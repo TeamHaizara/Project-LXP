@@ -1,10 +1,6 @@
 package com.example.projectlxp.service.course.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-
-import java.math.BigDecimal;
-
-public class CourseUpdateRequestDTO {
+public class CourseUpdateRequest {
 
     private Long categoryId;
     private String title;
@@ -12,10 +8,10 @@ public class CourseUpdateRequestDTO {
     private Integer price;
 
     // Constructors
-    public CourseUpdateRequestDTO() {
+    public CourseUpdateRequest() {
     }
 
-    public CourseUpdateRequestDTO(Long categoryId, String title, String description, Integer price) {
+    public CourseUpdateRequest(Long categoryId, String title, String description, Integer price) {
         this.categoryId = categoryId;
         this.title = title;
         this.description = description;
