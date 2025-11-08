@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public enum LectureServiceErrorCode implements ErrorCode {
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "Lecture not found with id: "),
+    LECTURE_NOT_INCLUDED_SECTION(HttpStatus.BAD_REQUEST, "Lecture id : %d not included section id : %d\n"),
     ;
 
     private HttpStatus httpStatus;

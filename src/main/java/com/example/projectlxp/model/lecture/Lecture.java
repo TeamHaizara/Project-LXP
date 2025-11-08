@@ -1,7 +1,6 @@
 package com.example.projectlxp.model.lecture;
 
 import com.example.projectlxp.model.lecture.exception.LectureAlreadyDeletedException;
-import com.example.projectlxp.model.lecture.exception.LectureExceptionCode;
 import com.example.projectlxp.model.lecture.exception.LectureOrderBoundException;
 import com.example.projectlxp.service.lecture.dto.LectureUpdateRequestDTO;
 import com.example.projectlxp.model.section.Section;
@@ -89,11 +88,16 @@ public class Lecture {
     }
 
     public void updateDetails(LectureUpdateRequestDTO requestDTO) {
+        validateDeleted();
+
         if (requestDTO.getTitle() != null) {
             this.title = requestDTO.getTitle();
         }
         if (requestDTO.getDescription() != null) {
             this.description = requestDTO.getDescription();
+        }
+        if(requestDTO.getOrder() != null) {
+            updateOrder(requestDTO.getOrder());
         }
         if (requestDTO.getType() != null) {
             this.type = requestDTO.getType();
@@ -110,15 +114,24 @@ public class Lecture {
     }
 
     public void updateOrder(Integer order) {
+        validateOrder(order);
+        validateDeleted();
+
+        setOrder(order);
+    }
+
+    private void validateOrder(Integer order) {
         if (order < 0) {
             throw new LectureOrderBoundException();
         }
+    }
 
+    private void validateDeleted() {
         if (this.deletedAt != null) {
             throw new LectureAlreadyDeletedException();
         }
-        setOrder(order);
     }
+
     public boolean isDeleted() {
         return deletedAt != null;
     }

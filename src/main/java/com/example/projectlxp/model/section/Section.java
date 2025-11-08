@@ -38,6 +38,10 @@ public class Section {
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
 
+    public Long getId() {
+        return id;
+    }
+
     public void setCourse(Course course) {
         // TODO
         return;

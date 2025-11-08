@@ -1,18 +1,19 @@
 package com.example.projectlxp.service.lecture;
 
 import com.example.projectlxp.service.lecture.exception.LectureNotFoundException;
-//import com.example.projectlxp.exception.SectionNotFoundException;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
 import com.example.projectlxp.repository.lecture.LectureRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.lecture.dto.*;
+import com.example.projectlxp.service.lecture.exception.LectureNotIncludeSectionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,7 +142,9 @@ public class LectureServiceImpl implements LectureService{
 
             if (lecture == null) {
                 throw new LectureNotFoundException(lectureId);
-                continue;
+            }
+            if(!Objects.equals(lecture.getSection().getId(), sectionId)){
+                throw new LectureNotIncludeSectionException(lecture.getId(),sectionId);
             }
             lecture.updateOrder(i+1);
         }

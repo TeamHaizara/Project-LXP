@@ -28,6 +28,11 @@ public class BusinessException extends RuntimeException {
         this.message = message;
     }
 
+    public BusinessException(ErrorCode exceptionCode, Long id1, Long id2){
+        this.message = String.format(exceptionCode.getMessage(), id1.toString(), id2.toString());
+        this.httpStatus = exceptionCode.getStatus();
+    }
+
     public HttpStatus getHttpStatus() {
         return httpStatus;
     }
