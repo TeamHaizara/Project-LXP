@@ -17,6 +17,13 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.deletedAt IS NULL")
     Optional<Course> findByIdAndNotDeleted(@Param("id") Long id);
 
+    // Soft delete를 고려한 조회 (Section, Lecture fetch join)
+    @Query("SELECT DISTINCT c FROM Course c " +
+            "LEFT JOIN FETCH c.sections s " +
+            "LEFT JOIN FETCH s.lectures " +
+            "WHERE c.id = :id AND c.deletedAt IS NULL")
+    Optional<Course> findByIdWithSectionsAndLectures(@Param("id") Long id);
+
     // 삭제되지 않은 모든 코스 조회
     @Query("SELECT c FROM Course c WHERE c.deletedAt IS NULL")
     List<Course> findAllNotDeleted();
