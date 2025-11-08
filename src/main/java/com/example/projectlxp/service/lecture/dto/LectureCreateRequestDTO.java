@@ -20,6 +20,7 @@ public class LectureCreateRequestDTO {
     @NotNull(message = "렉처 타입은 필수입니다.")
     private LectureType type;
 
+    @NotBlank(message = "강의 자료에 해당하는 Url이 필요합니다.")
     private String resourcePath;
 
     @Min(value = 0, message = "영상 길이는 0 이상이어야 합니다.")

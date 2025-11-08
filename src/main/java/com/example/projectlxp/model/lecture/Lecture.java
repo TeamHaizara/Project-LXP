@@ -1,10 +1,10 @@
 package com.example.projectlxp.model.lecture;
 
 import com.example.projectlxp.service.lecture.dto.LectureUpdateRequestDTO;
+import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.example.projectlxp.model.section.Section;
 
 @Entity
 @Table(name = "lectures")
@@ -14,7 +14,7 @@ public class Lecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
 
@@ -31,7 +31,7 @@ public class Lecture {
     @Column(nullable = false)
     private LectureType type;
 
-    @Column(name = "resource_path", columnDefinition = "TEXT")
+    @Column(name = "resource_path", nullable = false, columnDefinition = "TEXT")
     private String resourcePath;
 
     @Column
@@ -86,22 +86,22 @@ public class Lecture {
     }
 
     public void updateDetails(LectureUpdateRequestDTO requestDTO) {
-        if (title != null) {
+        if (requestDTO.getTitle() != null) {
             this.title = requestDTO.getTitle();
         }
-        if (description != null) {
+        if (requestDTO.getDescription() != null) {
             this.description = requestDTO.getDescription();
         }
-        if (type != null) {
+        if (requestDTO.getType() != null) {
             this.type = requestDTO.getType();
         }
-        if (resourcePath != null) {
+        if (requestDTO.getResourcePath() != null) {
             this.resourcePath = requestDTO.getResourcePath();
         }
-        if (duration != null) {
+        if (requestDTO.getDuration() != null) {
             this.duration = requestDTO.getDuration();
         }
-        if (isPreviewable != null) {
+        if (requestDTO.getIsPreviewable() != null) {
             this.isPreviewable = requestDTO.getIsPreviewable();
         }
     }
