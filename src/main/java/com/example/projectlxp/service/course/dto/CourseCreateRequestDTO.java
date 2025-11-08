@@ -1,10 +1,7 @@
 package com.example.projectlxp.service.course.dto;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.math.BigDecimal;
 
 public class CourseCreateRequestDTO {
 
@@ -20,14 +17,10 @@ public class CourseCreateRequestDTO {
     private String description;
 
     @NotNull(message = "가격은 필수입니다.")
-    @DecimalMin(value = "0.0", message = "가격은 0 이상이어야 합니다.")
-    private BigDecimal price;
+    private Integer price;
 
     // Constructors
-    public CourseCreateRequestDTO() {
-    }
-
-    public CourseCreateRequestDTO(Long instructorId, Long categoryId, String title, String description, BigDecimal price) {
+    public CourseCreateRequestDTO(Long instructorId, Long categoryId, String title, String description, Integer price) {
         this.instructorId = instructorId;
         this.categoryId = categoryId;
         this.title = title;
@@ -35,44 +28,25 @@ public class CourseCreateRequestDTO {
         this.price = price;
     }
 
-    // Getters and Setters
+    // Getters
     public Long getInstructorId() {
         return instructorId;
-    }
-
-    public void setInstructorId(Long instructorId) {
-        this.instructorId = instructorId;
     }
 
     public Long getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
-
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
 }

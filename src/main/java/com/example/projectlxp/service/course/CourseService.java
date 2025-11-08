@@ -1,7 +1,7 @@
 package com.example.projectlxp.service.course;
 
-import com.example.projectlxp.Exception.CourseNotFoundException;
-import com.example.projectlxp.Exception.InvalidCourseStatusException;
+import com.example.projectlxp.Exception.BusinessException;
+import com.example.projectlxp.Exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 import com.example.projectlxp.repository.course.CourseRepository;
@@ -40,7 +40,7 @@ public class CourseService {
     // 코스 조회 (ID)
     public CourseDetailResponseDTO getCourseById(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new CourseNotFoundException(id));
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
         return CourseDetailResponseDTO.from(course);
     }
 
@@ -66,8 +66,14 @@ public class CourseService {
     }
 
     // 상태별 코스 조회
-    public List<CourseListResponseDTO> getCoursesByStatus(CourseStatus status) {
-        return courseRepository.findByStatusAndNotDeleted(status).stream()
+    public List<CourseListResponseDTO> getCoursesByStatus(String status) {
+        CourseStatus courseStatus;
+        try {
+            courseStatus = CourseStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ExceptionCode.COURSE_NOT_FOUND, null);
+        }
+        return courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
                 .map(CourseListResponseDTO::from)
                 .collect(Collectors.toList());
     }
@@ -94,20 +100,14 @@ public class CourseService {
     @Transactional
     public CourseDetailResponseDTO updateCourse(Long id, CourseUpdateRequestDTO requestDTO) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new CourseNotFoundException(id));
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
 
-        if (requestDTO.getCategoryId() != null) {
-            course.setCategoryId(requestDTO.getCategoryId());
-        }
-        if (requestDTO.getTitle() != null) {
-            course.setTitle(requestDTO.getTitle());
-        }
-        if (requestDTO.getDescription() != null) {
-            course.setDescription(requestDTO.getDescription());
-        }
-        if (requestDTO.getPrice() != null) {
-            course.setPrice(requestDTO.getPrice());
-        }
+        course.updateBasicInfo(
+            requestDTO.getTitle(),
+            requestDTO.getDescription(),
+            requestDTO.getPrice(),
+            requestDTO.getCategoryId()
+        );
 
         Course updatedCourse = courseRepository.save(course);
         return CourseDetailResponseDTO.from(updatedCourse);
@@ -117,14 +117,13 @@ public class CourseService {
     @Transactional
     public void deleteCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new CourseNotFoundException(id));
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
 
         // Soft delete: Course와 하위 Section, Lecture도 모두 soft delete
         course.softDelete();
         course.getSections().forEach(section -> {
             section.softDelete();
-            // TODO: lecture.softDelete() 구현 후 cascade delete 활성화
-            // section.getLectures().forEach(lecture -> lecture.softDelete());
+            section.getLectures().forEach(lecture -> lecture.softDelete());
         });
 
         courseRepository.save(course);
@@ -134,12 +133,9 @@ public class CourseService {
     @Transactional
     public CourseDetailResponseDTO changeCourseStatus(Long id, CourseStatus newStatus) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new CourseNotFoundException(id));
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
 
-        // 상태 전환 규칙 검증
-        validateStatusTransition(course.getStatus(), newStatus);
-
-        course.setStatus(newStatus);
+        course.changeStatus(newStatus);
         Course updatedCourse = courseRepository.save(course);
         return CourseDetailResponseDTO.from(updatedCourse);
     }
@@ -147,24 +143,22 @@ public class CourseService {
     // 코스 발행 (DRAFT/ARCHIVED -> PUBLISHED)
     @Transactional
     public CourseDetailResponseDTO publishCourse(Long id) {
-        return changeCourseStatus(id, CourseStatus.PUBLISHED);
+        Course course = courseRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+
+        course.publish();
+        Course updatedCourse = courseRepository.save(course);
+        return CourseDetailResponseDTO.from(updatedCourse);
     }
 
     // 코스 아카이빙 (DRAFT/PUBLISHED -> ARCHIVED)
     @Transactional
     public CourseDetailResponseDTO archiveCourse(Long id) {
-        return changeCourseStatus(id, CourseStatus.ARCHIVED);
-    }
+        Course course = courseRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
 
-    // 상태 전환 규칙 검증
-    private void validateStatusTransition(CourseStatus currentStatus, CourseStatus newStatus) {
-        if (currentStatus == CourseStatus.DELETED) {
-            throw new InvalidCourseStatusException("삭제된 코스의 상태는 변경할 수 없습니다.");
-        }
-
-        // DRAFT -> PUBLISHED, ARCHIVED 가능
-        // PUBLISHED -> ARCHIVED 가능
-        // ARCHIVED -> PUBLISHED 가능 (재개설)
-        // DELETED -> 영구적 변경 불가
+        course.archive();
+        Course updatedCourse = courseRepository.save(course);
+        return CourseDetailResponseDTO.from(updatedCourse);
     }
 }

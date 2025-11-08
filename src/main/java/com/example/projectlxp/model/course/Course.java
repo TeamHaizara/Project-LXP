@@ -1,12 +1,11 @@
 package com.example.projectlxp.model.course;
 
+import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.example.projectlxp.model.section.Section;
 
 @Entity
 @Table(name = "courses")
@@ -28,8 +27,8 @@ public class Course {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, precision = 19, scale = 4)
-    private BigDecimal price = BigDecimal.ZERO;
+    @Column(nullable = false)
+    private Integer price;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -59,15 +58,15 @@ public class Course {
     }
 
     // Constructors
-    public Course() {
+    protected Course() {
     }
 
-    public Course(Long instructorId, Long categoryId, String title, String description, BigDecimal price) {
+    public Course(Long instructorId, Long categoryId, String title, String description, Integer price) {
         this.instructorId = instructorId;
         this.categoryId = categoryId;
         this.title = title;
         this.description = description;
-        this.price = price != null ? price : BigDecimal.ZERO;
+        this.price = price != null ? price : 0;
     }
 
     // Soft delete method
@@ -79,93 +78,88 @@ public class Course {
         return deletedAt != null;
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    // Business logic methods
+    public void updateBasicInfo(String title, String description, Integer price, Long categoryId) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (categoryId != null) {
+            this.categoryId = categoryId;
+        }
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void changeStatus(CourseStatus newStatus) {
+        validateStatusTransition(newStatus);
+        this.status = newStatus;
+    }
+
+    public void publish() {
+        changeStatus(CourseStatus.PUBLISHED);
+    }
+
+    public void archive() {
+        changeStatus(CourseStatus.ARCHIVED);
+    }
+
+    private void validateStatusTransition(CourseStatus newStatus) {
+        if (this.status == CourseStatus.DELETED) {
+            throw new IllegalStateException("삭제된 코스의 상태는 변경할 수 없습니다.");
+        }
+        // 추가 검증 로직이 필요하면 여기에 구현
+        // DRAFT -> PUBLISHED, ARCHIVED 가능
+        // PUBLISHED -> ARCHIVED 가능
+        // ARCHIVED -> PUBLISHED 가능 (재개설)
+    }
+
+    // Getters
+    public Long getId() {
+        return id;
     }
 
     public Long getInstructorId() {
         return instructorId;
     }
 
-    public void setInstructorId(Long instructorId) {
-        this.instructorId = instructorId;
-    }
-
     public Long getCategoryId() {
         return categoryId;
-    }
-
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
+    public Integer getPrice() {
         return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
     }
 
     public CourseStatus getStatus() {
         return status;
     }
 
-    public void setStatus(CourseStatus status) {
-        this.status = status;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public LocalDateTime getDeletedAt() {
         return deletedAt;
     }
 
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
-    }
-
     public List<Section> getSections() {
         return sections;
-    }
-
-    public void setSections(List<Section> sections) {
-        this.sections = sections;
     }
 
     // Helper methods

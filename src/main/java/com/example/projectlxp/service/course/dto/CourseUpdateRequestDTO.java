@@ -9,51 +9,35 @@ public class CourseUpdateRequestDTO {
     private Long categoryId;
     private String title;
     private String description;
-
-    @DecimalMin(value = "0.0", message = "가격은 0 이상이어야 합니다.")
-    private BigDecimal price;
+    private Integer price;
 
     // Constructors
     public CourseUpdateRequestDTO() {
     }
 
-    public CourseUpdateRequestDTO(Long categoryId, String title, String description, BigDecimal price) {
+    public CourseUpdateRequestDTO(Long categoryId, String title, String description, Integer price) {
         this.categoryId = categoryId;
         this.title = title;
         this.description = description;
         this.price = price;
     }
 
-    // Getters and Setters
+    // Getters
     public Long getCategoryId() {
         return categoryId;
-    }
-
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+
 }

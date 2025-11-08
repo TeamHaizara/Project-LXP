@@ -67,8 +67,8 @@ public class CourseController {
     }
 
     // 상태별 코스 조회
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<CourseListResponseDTO>> getCoursesByStatus(@PathVariable CourseStatus status) {
+    @GetMapping("/status")
+    public ResponseEntity<List<CourseListResponseDTO>> getCoursesByStatus(@RequestParam String status) {
         List<CourseListResponseDTO> response = courseService.getCoursesByStatus(status);
         return ResponseEntity.ok(response);
     }
