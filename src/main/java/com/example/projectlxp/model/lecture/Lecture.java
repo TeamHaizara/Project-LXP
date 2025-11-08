@@ -1,5 +1,7 @@
 package com.example.projectlxp.model.lecture;
 
+import com.example.projectlxp.model.lecture.exception.LectureAlreadyDeletedException;
+import com.example.projectlxp.model.lecture.exception.LectureOrderBoundException;
 import com.example.projectlxp.service.lecture.dto.LectureUpdateRequestDTO;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;

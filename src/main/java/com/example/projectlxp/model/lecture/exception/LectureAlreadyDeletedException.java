@@ -1,0 +1,11 @@
+package com.example.projectlxp.model.lecture.exception;
+
+import com.example.projectlxp.exception.BusinessException;
+
+import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.LECTURE_ALREADY_DELETED;
+
+public class LectureAlreadyDeletedException extends BusinessException {
+    public LectureAlreadyDeletedException(String message) {
+        super(LECTURE_ALREADY_DELETED);
+    }
+}
