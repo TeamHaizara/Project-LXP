@@ -1,8 +1,12 @@
 package com.example.projectlxp.model.course;
 
+import com.example.projectlxp.exception.BusinessException;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static com.example.projectlxp.exception.ExceptionCode.*;
 
 public enum CourseStatus {
 
@@ -24,14 +28,12 @@ public enum CourseStatus {
     // 문자열에서 CourseStatus로 변환
     public static CourseStatus from(String status) {
         if (status == null || status.isBlank()) {
-            // TODO - use custom exception
-            throw new IllegalArgumentException("상태 값은 null이거나 공백일 수 없습니다.");
+            throw new BusinessException(COURSE_STATUS_NULL);
         }
         try {
             return CourseStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            // TODO - use custom exception
-            throw new IllegalArgumentException("유효하지 않은 코스 상태입니다: " + status);
+            throw new BusinessException(INVALID_COURSE_STATUS, status);
         }
     }
 

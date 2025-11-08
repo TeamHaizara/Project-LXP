@@ -18,7 +18,7 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ErrorCode exceptionCode, String field){
-        this.message = exceptionCode.getMessage() + field;
+        this.message = String.format(exceptionCode.getMessage(), field);
         this.httpStatus = exceptionCode.getStatus();
     }
 

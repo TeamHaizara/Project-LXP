@@ -4,16 +4,21 @@ package com.example.projectlxp.exception;
 import org.springframework.http.HttpStatus;
 
 public enum ExceptionCode implements ErrorCode {
-    //course
-    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "Course not found with id: "),
-    INVALID_COURSE_STATUS(HttpStatus.BAD_REQUEST, "Invalid course status."),
+    // Course
+    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "Course not found with id: %d"),
+    COURSE_HAS_ENROLLED_STUDENTS(HttpStatus.CONFLICT, "Cannot delete course with %d enrolled students."),
+    COURSE_STATUS_NULL(HttpStatus.BAD_REQUEST, "Course status cannot be null or blank."),
+    INVALID_COURSE_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "Invalid status transition: %s -> %s"),
+    INVALID_COURSE_STATUS(HttpStatus.BAD_REQUEST, "Invalid course status: %s"),
 
-    //section
+    // Section
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: "),
 
-    //enrolled course
+    // Lecture
 
-    //common
+    // Enrolled course
+
+    // Common
     NOT_NULL_FIELD_IS_NULL(HttpStatus.BAD_REQUEST, "Not null field is null."),
     ;
 

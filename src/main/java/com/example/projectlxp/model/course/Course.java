@@ -1,8 +1,11 @@
 package com.example.projectlxp.model.course;
 
+import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
+
+import static com.example.projectlxp.exception.ExceptionCode.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -116,10 +119,7 @@ public class Course {
     // DELETED로 상태 전이 (enrolled user == 0)
     public void toDeleted(int enrolledUserCount) {
         if (enrolledUserCount > 0) {
-            // TODO: use custom exception
-            throw new IllegalStateException(
-                    String.format("등록된 학생이 %d명 있어서 삭제할 수 없습니다", enrolledUserCount)
-            );
+            throw new BusinessException(COURSE_HAS_ENROLLED_STUDENTS, (long) enrolledUserCount);
         }
         transitionTo(CourseStatus.DELETED);
     }
@@ -133,15 +133,11 @@ public class Course {
     // 상태 전이 규칙 검증 (도메인 규칙만 확인, 사전 조건은 미포함)
     private void validateStatusTransition(CourseStatus newStatus) {
         if (newStatus == null) {
-            // TODO: use custom exception
-            throw new IllegalArgumentException("상태는 null일 수 없습니다.");
+            throw new BusinessException(COURSE_STATUS_NULL);
         }
 
         if (!this.status.canTransitionTo(newStatus)) {
-            // TODO: use custom exception
-            throw new IllegalStateException(
-                    String.format("상태 전이가 불가능합니다: %s -> %s", this.status, newStatus)
-            );
+            throw new BusinessException(INVALID_COURSE_STATUS_TRANSITION, (long) this.status.ordinal(), (long) newStatus.ordinal());
         }
     }
 
