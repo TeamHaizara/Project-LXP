@@ -133,8 +133,8 @@ public class CourseService {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
         int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
-        course.cascadeSoftDelete();
-        course.toDeleted(enrolledUserCount);
+        course.toDeleted(enrolledUserCount); // validation + status transition first
+        course.cascadeSoftDelete(); // actual cascade delete
     }
 
 }

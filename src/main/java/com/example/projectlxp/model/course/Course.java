@@ -82,6 +82,28 @@ public class Course {
         return deletedAt != null;
     }
 
+    /**
+     * Performs a soft delete on this course and cascades the deletion to all associated sections and lectures.
+     * <p>
+     * This method sets the {@code deletedAt} timestamp for the course, all its sections, and all lectures
+     * within those sections.
+     * <p>
+     * <b>IMPORTANT:</b> This method accesses lazily-loaded collections ({@code sections}, {@code lectures}).
+     * It <b>MUST</b> be called within an active transaction context to avoid {@code LazyInitializationException}.
+     * <p>
+     * <b>Recommended Usage:</b>
+     * <ul>
+     *   <li>Call via {@link com.example.projectlxp.service.course.CourseService#deleteCourse(Long)}
+     *       which ensures proper transaction management and eager loading of associations.</li>
+     *   <li>If calling directly, ensure the calling method is annotated with {@code @Transactional}
+     *       and the course entity is loaded with its associations (e.g., using fetch join).</li>
+     * </ul>
+     *
+     * @throws org.hibernate.LazyInitializationException if called outside an active transaction context
+     *                                                   or if the sections/lectures collections are not initialized
+     * @tl;dr 트랜잭션 밖에서 호출하면 예외 터짐
+     * @see com.example.projectlxp.service.course.CourseService#deleteCourse(Long)
+     */
     public void cascadeSoftDelete() {
         this.softDelete();
         this.sections.forEach(section -> {
