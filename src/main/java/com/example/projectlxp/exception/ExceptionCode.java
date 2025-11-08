@@ -1,14 +1,12 @@
 package com.example.projectlxp.exception;
 
+
 import org.springframework.http.HttpStatus;
 
-public enum ExceptionCode {
+public enum ExceptionCode implements ErrorCode {
     //course
     COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "Course not found with id: "),
     INVALID_COURSE_STATUS(HttpStatus.BAD_REQUEST, "Invalid course status."),
-
-    //lecture
-    LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "Lecture not found with id: "),
 
     //section
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: "),
@@ -27,10 +25,12 @@ public enum ExceptionCode {
         this.message = message;
     }
 
+    @Override
     public HttpStatus getStatus() {
         return status;
     }
 
+    @Override
     public String getMessage() {
         return message;
     }

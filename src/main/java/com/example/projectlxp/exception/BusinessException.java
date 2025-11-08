@@ -7,17 +7,17 @@ public class BusinessException extends RuntimeException {
     private final String message;
     private Throwable cause = null;
 
-    public BusinessException(ExceptionCode exceptionCode){
+    public BusinessException(ErrorCode exceptionCode){
         this.message = exceptionCode.getMessage();
         this.httpStatus = exceptionCode.getStatus();
     }
 
-    public BusinessException(ExceptionCode exceptionCode, Long id){
+    public BusinessException(ErrorCode exceptionCode, Long id){
         this.message = exceptionCode.getMessage() + id.toString();
         this.httpStatus = exceptionCode.getStatus();
     }
 
-    public BusinessException(ExceptionCode exceptionCode, String field){
+    public BusinessException(ErrorCode exceptionCode, String field){
         this.message = exceptionCode.getMessage() + field;
         this.httpStatus = exceptionCode.getStatus();
     }
@@ -26,6 +26,11 @@ public class BusinessException extends RuntimeException {
         super(message, cause);
         this.httpStatus = httpStatus;
         this.message = message;
+    }
+
+    public BusinessException(ErrorCode exceptionCode, Long id1, Long id2){
+        this.message = String.format(exceptionCode.getMessage(), id1.toString(), id2.toString());
+        this.httpStatus = exceptionCode.getStatus();
     }
 
     public HttpStatus getHttpStatus() {
