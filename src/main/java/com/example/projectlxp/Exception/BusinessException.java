@@ -1,34 +1,30 @@
-package com.example.projectlxp.Exception;
+package com.example.projectlxp.exception;
+
+import org.springframework.http.HttpStatus;
 
 public class BusinessException extends RuntimeException {
-
-    private final ExceptionCode exceptionCode;
-    private final Long id;
+    private final HttpStatus httpStatus;
+    private final String message;
+    private Throwable cause = null;
 
     public BusinessException(ExceptionCode exceptionCode){
-        this.exceptionCode = exceptionCode;
-        this.id = null;
+        this.message = exceptionCode.getMessage();
+        this.httpStatus = exceptionCode.getStatus();
     }
 
     public BusinessException(ExceptionCode exceptionCode, Long id){
-        this.exceptionCode = exceptionCode;
-        this.id = id;
+        this.message = exceptionCode.getMessage() + id.toString();
+        this.httpStatus = exceptionCode.getStatus();
     }
 
-    public ExceptionCode getExceptionCode() {
-        return exceptionCode;
+    public BusinessException(ExceptionCode exceptionCode, String field){
+        this.message = exceptionCode.getMessage() + field;
+        this.httpStatus = exceptionCode.getStatus();
     }
 
-    public long getId() {
-        return id;
+    private BusinessException(HttpStatus httpStatus, String message, Throwable cause){
+        super(message, cause);
+        this.httpStatus = httpStatus;
+        this.message = message;
     }
-
-    public String getMessage() {
-        return exceptionCode.toString() + (hasId() ? id : "");
-    }
-
-    private boolean hasId() {
-        return id != null;
-    }
-
 }
