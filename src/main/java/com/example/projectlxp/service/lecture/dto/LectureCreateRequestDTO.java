@@ -43,68 +43,40 @@ public class LectureCreateRequestDTO {
         this.isPreviewable = isPreviewable;
     }
 
+    //requestDTO 검증
+    /*TODO*/
+
     // Getters and Setters
+
     public Long getSectionId() {
         return sectionId;
-    }
-
-    public void setSectionId(Long sectionId) {
-        this.sectionId = sectionId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public Integer getOrder() {
         return order;
     }
 
-    public void setOrder(Integer order) {
-        this.order = order;
-    }
-
     public LectureType getType() {
         return type;
-    }
-
-    public void setType(LectureType type) {
-        this.type = type;
     }
 
     public String getResourcePath() {
         return resourcePath;
     }
 
-    public void setResourcePath(String resourcePath) {
-        this.resourcePath = resourcePath;
-    }
-
     public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(Integer duration) {
-        this.duration = duration;
-    }
-
     public Boolean getIsPreviewable() {
         return isPreviewable;
-    }
-
-    public void setIsPreviewable(Boolean isPreviewable) {
-        this.isPreviewable = isPreviewable;
     }
 }

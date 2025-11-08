@@ -15,13 +15,14 @@ public enum LectureExceptionCode implements ErrorCode {
         this.status = status;
         this.message = message;
     }
+
     @Override
     public HttpStatus getStatus() {
-        return null;
+        return status;
     }
 
     @Override
     public String getMessage() {
-        return "";
+        return message;
     }
 }

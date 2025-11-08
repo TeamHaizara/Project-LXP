@@ -1,7 +1,7 @@
 package com.example.projectlxp.service.lecture;
 
-import com.example.projectlxp.tmp.LectureNotFoundException;
-import com.example.projectlxp.tmp.SectionNotFoundException;
+import com.example.projectlxp.service.lecture.exception.LectureNotFoundException;
+//import com.example.projectlxp.exception.SectionNotFoundException;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
@@ -32,8 +32,8 @@ public class LectureServiceImpl implements LectureService{
     public LectureResponseDTO createLecture(LectureCreateRequestDTO requestDTO) {
         Section section = sectionRepository.findByIdAndNotDeleted(requestDTO.getSectionId())
                 .orElseThrow(() -> new SectionNotFoundException(requestDTO.getSectionId()));
-        //requestDTO 검증
-        validateLectureDurationAndPath(requestDTO);
+
+
 
         // order가 지정되지 않으면 자동으로 마지막에 추가
         Integer order = requestDTO.getOrder();

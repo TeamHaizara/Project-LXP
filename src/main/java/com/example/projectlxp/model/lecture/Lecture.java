@@ -1,6 +1,7 @@
 package com.example.projectlxp.model.lecture;
 
 import com.example.projectlxp.model.lecture.exception.LectureAlreadyDeletedException;
+import com.example.projectlxp.model.lecture.exception.LectureExceptionCode;
 import com.example.projectlxp.model.lecture.exception.LectureOrderBoundException;
 import com.example.projectlxp.service.lecture.dto.LectureUpdateRequestDTO;
 import com.example.projectlxp.model.section.Section;
@@ -110,11 +111,11 @@ public class Lecture {
 
     public void updateOrder(Integer order) {
         if (order < 0) {
-            throw new LectureOrderBoundException("정렬 순서는 0보다 작을 수 없습니다.");
+            throw new LectureOrderBoundException();
         }
 
         if (this.deletedAt != null) {
-            throw new LectureAlreadyDeletedException("삭제된 강의의 순서는 변경할 수 없습니다.");
+            throw new LectureAlreadyDeletedException();
         }
         setOrder(order);
     }
