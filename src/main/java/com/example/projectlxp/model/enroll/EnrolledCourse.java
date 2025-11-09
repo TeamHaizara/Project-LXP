@@ -2,6 +2,7 @@ package com.example.projectlxp.model.enroll;
 
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +18,7 @@ public class EnrolledCourse {
     private Long id;
     private Long courseId;
     private Long userId;
+    @Column(updatable = false, nullable = false)
     private LocalDateTime enrolledAt;
 
     private EnrolledCourse(Long courseId, Long userId, LocalDateTime enrolledAt) {
@@ -47,4 +49,8 @@ public class EnrolledCourse {
     }
 
     protected EnrolledCourse() {}
+
+    public Long getCourseId() {
+        return courseId;
+    }
 }
