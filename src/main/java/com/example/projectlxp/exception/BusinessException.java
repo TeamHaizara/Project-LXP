@@ -54,7 +54,7 @@ public class BusinessException extends RuntimeException {
         return new Builder(errorCode);
     }
 
-    public static class Builder {
+    private static class Builder {
         private final HttpStatus httpStatus;
         private final String messageTemplate;
         private final List<Object> params = new ArrayList<>();
