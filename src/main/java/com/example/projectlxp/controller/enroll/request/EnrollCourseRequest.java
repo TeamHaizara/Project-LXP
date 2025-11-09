@@ -1,4 +1,4 @@
-package com.example.projectlxp.controller.enroll.dto;
+package com.example.projectlxp.controller.enroll.request;
 
 import com.example.projectlxp.service.enroll.dto.EnrollCourseServiceDto;
 

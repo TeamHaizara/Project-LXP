@@ -12,6 +12,7 @@ public enum ExceptionCode implements ErrorCode {
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: "),
 
     //enrolled course
+    ALREADY_ENROLLED(HttpStatus.BAD_REQUEST, "Already enrolled"),
 
     //common
     NOT_NULL_FIELD_IS_NULL(HttpStatus.BAD_REQUEST, "Not null field is null."),
