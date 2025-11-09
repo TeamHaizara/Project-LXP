@@ -56,11 +56,7 @@ public class BusinessException extends RuntimeException {
         this.cause = builder.cause;
     }
 
-    public static Builder builder(ErrorCode errorCode) {
-        return new Builder(errorCode);
-    }
-
-    public static class Builder {
+        BusinessExceptionBuilder withId(Long... ids);
         private final HttpStatus httpStatus;
         private final String messageTemplate;
         private final List<Object> params = new ArrayList<>();
