@@ -36,13 +36,6 @@ public class CourseController {
         return ResponseEntity.ok(response);
     }
 
-    // 여러 ID로 코스 조회 (내가 수강 중인 코스 목록)
-    @PostMapping("/enrolled")
-    public ResponseEntity<List<CourseListResponse>> getCoursesByIds(@RequestBody List<Long> courseIds) {
-        List<CourseListResponse> response = courseService.getCoursesByIds(courseIds);
-        return ResponseEntity.ok(response);
-    }
-
     // 모든 코스 조회
     @GetMapping
     public ResponseEntity<List<CourseListResponse>> getAllCourses() {

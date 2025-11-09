@@ -27,6 +27,7 @@ public class Course {
     @Column(nullable = false, length = 255)
     private String title;
 
+    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -72,11 +73,6 @@ public class Course {
         this.price = price != null ? price : 0;
     }
 
-    // Soft delete
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
-    }
-
     public boolean isDeleted() {
         return deletedAt != null;
     }
@@ -104,7 +100,7 @@ public class Course {
      * @see com.example.projectlxp.service.course.CourseService#deleteCourse(Long)
      */
     public void cascadeSoftDelete() {
-        this.softDelete();
+        this.deletedAt = LocalDateTime.now();
         this.sections.forEach(section -> {
             section.softDelete();
             section.getLectures().forEach(Lecture::softDelete);
