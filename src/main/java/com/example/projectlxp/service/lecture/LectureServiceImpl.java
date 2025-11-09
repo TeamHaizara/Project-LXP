@@ -1,13 +1,12 @@
 package com.example.projectlxp.service.lecture;
 
-import com.example.projectlxp.service.lecture.exception.LectureNotFoundException;
+import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
 import com.example.projectlxp.repository.lecture.LectureRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.lecture.dto.*;
-import com.example.projectlxp.service.lecture.exception.LectureNotIncludeSectionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode.LECTURE_NOT_FOUND;
+import static com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION;
 
 @Service
 @Transactional(readOnly = true)
@@ -57,9 +59,9 @@ public class LectureServiceImpl implements LectureService{
     }
 
     // 렉처 조회 (ID)
-    public LectureResponseDTO getLectureById(Long id) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new LectureNotFoundException(id));
+    public LectureResponseDTO getLectureById(Long lectureId) {
+        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
+                .orElseThrow(() -> BusinessException.builder(LECTURE_NOT_FOUND).withId(lectureId).build());
         return LectureResponseDTO.from(lecture);
     }
 
@@ -102,9 +104,9 @@ public class LectureServiceImpl implements LectureService{
 
     // 렉처 수정
     @Transactional
-    public LectureResponseDTO updateLecture(Long id, LectureUpdateRequestDTO requestDTO) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new LectureNotFoundException(id));
+    public LectureResponseDTO updateLecture(Long lectureId, LectureUpdateRequestDTO requestDTO) {
+        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
+                .orElseThrow(() -> BusinessException.builder(LECTURE_NOT_FOUND).withId(lectureId).build());
 
         lecture.updateDetails(requestDTO);
 
@@ -114,9 +116,9 @@ public class LectureServiceImpl implements LectureService{
 
     // 렉처 삭제 (Soft Delete)
     @Transactional
-    public void deleteLecture(Long id) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new LectureNotFoundException(id));
+    public void deleteLecture(Long lectureId) {
+        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
+                .orElseThrow(() -> BusinessException.builder(LECTURE_NOT_FOUND).withId(lectureId).build());
 
         lecture.softDelete();
         lectureRepository.save(lecture);
@@ -138,11 +140,11 @@ public class LectureServiceImpl implements LectureService{
             Lecture lecture = lectureMap.get(lectureId);
 
             if (lecture == null) {
-                throw new LectureNotFoundException(lectureId);
+                throw BusinessException.builder(LECTURE_NOT_FOUND).withId(lectureId).build();
             }
 
             if(!Objects.equals(lecture.getSection().getId(), sectionId)){
-                throw new LectureNotIncludeSectionException(lecture.getId(),sectionId);
+                throw BusinessException.builder(LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(),sectionId).build();
             }
 
             lecture.updateOrder(i);

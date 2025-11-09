@@ -44,7 +44,7 @@ public class LectureResponseDTO {
                 lecture.getSection().getId(),
                 lecture.getTitle(),
                 lecture.getDescription(),
-                lecture.getOrder(),
+                lecture.getSortOrder(),
                 lecture.getType(),
                 lecture.getResourcePath(),
                 lecture.getDuration(),

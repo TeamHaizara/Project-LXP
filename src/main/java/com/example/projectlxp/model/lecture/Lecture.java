@@ -1,11 +1,13 @@
 package com.example.projectlxp.model.lecture;
 
-import com.example.projectlxp.model.lecture.exception.LectureAlreadyDeletedException;
-import com.example.projectlxp.model.lecture.exception.LectureOrderBoundException;
+import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.service.lecture.dto.LectureUpdateRequestDTO;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.LECTURE_ALREADY_DELETED;
+import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.ORDER_NUMBER_UNDER_ZERO;
 
 
 @Entity
@@ -27,7 +29,7 @@ public class Lecture {
     private String description;
 
     @Column(name = "order", nullable = false)
-    private Integer order;
+    private Integer sortOrder;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -66,11 +68,11 @@ public class Lecture {
     protected Lecture() {
     }
 
-    public Lecture(Section section, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
+    public Lecture(Section section, String title, String description, Integer sortOrder, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
         this.section = section;
         this.title = title;
         this.description = description;
-        this.order = order;
+        this.sortOrder = sortOrder;
         this.type = type;
         this.resourcePath = resourcePath;
         this.duration = duration;
@@ -117,18 +119,18 @@ public class Lecture {
         validateOrder(order);
         validateDeleted();
 
-        setOrder(order);
+        setSortOrder(order);
     }
 
     private void validateOrder(Integer order) {
         if (order < 0) {
-            throw new LectureOrderBoundException();
+            throw BusinessException.builder(ORDER_NUMBER_UNDER_ZERO).build();
         }
     }
 
     private void validateDeleted() {
         if (this.deletedAt != null) {
-            throw new LectureAlreadyDeletedException();
+            throw BusinessException.builder(LECTURE_ALREADY_DELETED).build();
         }
     }
 
@@ -169,12 +171,12 @@ public class Lecture {
         this.description = description;
     }
 
-    public Integer getOrder() {
-        return order;
+    public Integer getSortOrder() {
+        return sortOrder;
     }
 
-    protected void setOrder(Integer order) {
-        this.order = order;
+    protected void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
     }
 
     public LectureType getType() {
@@ -228,7 +230,7 @@ public class Lecture {
                 ", section=" + section +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", order=" + order +
+                ", order=" + sortOrder +
                 ", type=" + type +
                 ", resourcePath='" + resourcePath + '\'' +
                 ", duration=" + duration +
