@@ -1,7 +1,7 @@
 ## 개요
 <!---- 변경 사항 및 관련 이슈에 대해 간단하게 작성해주세요. 어떻게보다 무엇을 왜 수정했는지 설명해주세요. -->
 
-<!---- Resolves: #(Isuue Number) -->
+<!---- Resolves: #(Issue Number) -->
 
 ## PR 유형
 어떤 변경 사항이 있나요?
@@ -21,5 +21,8 @@
 ## PR Checklist
 PR이 다음 요구 사항을 충족하는지 확인하세요.
 
-- [ ] 커밋 메시지 컨벤션에 맞게 작성했습니다.  Commit message convention 참고  (Ctrl + 클릭하세요.) 
-- [ ] 변경 사항에 대한 테스트를 했습니다.(버그 수정/기능에 대한 테스트).
+- [ ] 커밋 메시지 컨벤션에 맞게 작성했습니다. [Commit message convention 참고](https://www.conventionalcommits.org/en/v1.0.0/)
+- [ ] 변경 사항에 대한 테스트를 했습니다. (버그 수정/기능에 대한 테스트).
+
+## FYI
+- `[x]` 대괄호 사이에 x 를 넣으면 체크 된 체크박스가 됩니다
