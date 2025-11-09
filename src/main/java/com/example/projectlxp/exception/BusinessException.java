@@ -50,11 +50,19 @@ public class BusinessException extends RuntimeException {
         this.cause = builder.cause;
     }
 
-    public static Builder builder(ErrorCode errorCode) {
+    public interface BusinessExceptionBuilder {
+        BusinessExceptionBuilder withId(Long... ids);
+        BusinessExceptionBuilder withCourseStatus(CourseStatus... statuses);
+        BusinessExceptionBuilder withField(String... fields);
+        BusinessExceptionBuilder withCause(Throwable cause);
+        BusinessException build();
+    }
+
+    public static BusinessExceptionBuilder builder(ErrorCode errorCode) {
         return new Builder(errorCode);
     }
 
-    private static class Builder {
+    private static class Builder implements BusinessExceptionBuilder {
         private final HttpStatus httpStatus;
         private final String messageTemplate;
         private final List<Object> params = new ArrayList<>();
