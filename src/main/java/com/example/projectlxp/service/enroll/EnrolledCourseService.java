@@ -26,6 +26,7 @@ public class EnrolledCourseService {
         this.courseRepository = courseRepository;
     }
 
+    @Transactional
     public void enroll(EnrollCourseServiceDto dto) {
         validateExistUser(dto.userId());
         validateExistCourse(dto.courseId());
@@ -48,5 +49,11 @@ public class EnrolledCourseService {
     private void validateExistCourse(Long courseId) {
         courseRepository.findById(courseId)
             .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND).build());
+    }
+
+    private void validateAlreadyEnrolled(Long userId, Long courseId) {
+        if (enrolledCourseRepository.existsByUserIdAndCourseId(userId, courseId)) {
+            throw BusinessException.builder(ExceptionCode.ALREADY_ENROLLED).build();
+        }
     }
 }

@@ -11,4 +11,6 @@ public interface EnrolledCourseRepository extends JpaRepository<EnrolledCourse, 
     Integer countByCourseId(Long courseId);
 
     List<EnrolledCourse> findEnrolledCoursesByUserId(Long userId);
+
+    boolean existsByUserIdAndCourseId(Long userId, Long courseId);
 }
