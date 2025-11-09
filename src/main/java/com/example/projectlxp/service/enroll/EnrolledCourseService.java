@@ -47,6 +47,6 @@ public class EnrolledCourseService {
 
     private void validateExistCourse(Long courseId) {
         courseRepository.findById(courseId)
-            .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND));
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND).build());
     }
 }

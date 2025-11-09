@@ -37,14 +37,18 @@ public class EnrolledCourse {
     private void validateCourseIdIsNull(Long courseId) {
         Optional.ofNullable(courseId)
             .orElseThrow(() ->
-                new BusinessException(ExceptionCode.NOT_NULL_FIELD_IS_NULL, "courseId")
+                BusinessException.builder(ExceptionCode.NOT_NULL_FIELD_IS_NULL)
+                    .withField("courseId")
+                    .build()
             );
     }
 
     private void validateUserIdIsNull(Long userId) {
         Optional.ofNullable(userId)
             .orElseThrow(() ->
-                new BusinessException(ExceptionCode.NOT_NULL_FIELD_IS_NULL, "userId")
+                BusinessException.builder(ExceptionCode.NOT_NULL_FIELD_IS_NULL)
+                    .withField("userId")
+                    .build()
             );
     }
 
