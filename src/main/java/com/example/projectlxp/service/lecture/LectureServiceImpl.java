@@ -34,8 +34,6 @@ public class LectureServiceImpl implements LectureService{
         Section section = sectionRepository.findByIdAndNotDeleted(requestDTO.getSectionId())
                 .orElseThrow(() -> new SectionNotFoundException(requestDTO.getSectionId()));
 
-
-
         // order가 지정되지 않으면 자동으로 마지막에 추가
         Integer order = requestDTO.getOrder();
         if (order == null) {
@@ -54,14 +52,13 @@ public class LectureServiceImpl implements LectureService{
                 requestDTO.getIsPreviewable() != null ? requestDTO.getIsPreviewable() : false
         );
 
-
         Lecture savedLecture = lectureRepository.save(lecture);
         return LectureResponseDTO.from(savedLecture);
     }
 
     // 렉처 조회 (ID)
     public LectureResponseDTO getLectureById(Long id) {
-        Lecture lecture = lectureRepository.findByIdAndNotDeleted(id)
+        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new LectureNotFoundException(id));
         return LectureResponseDTO.from(lecture);
     }
@@ -71,7 +68,7 @@ public class LectureServiceImpl implements LectureService{
         sectionRepository.findByIdAndNotDeleted(sectionId)
                 .orElseThrow(() -> new SectionNotFoundException(sectionId));
 
-        return lectureRepository.findBySectionIdAndNotDeletedOrderByOrder(sectionId).stream()
+        return lectureRepository.findBySectionIdAndDeletedAtIsNullOrderByOrderAsc(sectionId).stream()
                 .map(LectureResponseDTO::from)
                 .collect(Collectors.toList());
     }
@@ -81,7 +78,7 @@ public class LectureServiceImpl implements LectureService{
         sectionRepository.findByIdAndNotDeleted(sectionId)
                 .orElseThrow(() -> new SectionNotFoundException(sectionId));
 
-        return lectureRepository.findPreviewableLecturesBySectionId(sectionId).stream()
+        return lectureRepository.findBySectionIdAndPreviewableTrueAndDeletedAtIsNullOrderByOrderAsc(sectionId).stream()
                 .map(LectureResponseDTO::from)
                 .collect(Collectors.toList());
     }
@@ -91,14 +88,14 @@ public class LectureServiceImpl implements LectureService{
         sectionRepository.findByIdAndNotDeleted(sectionId)
                 .orElseThrow(() -> new SectionNotFoundException(sectionId));
 
-        return lectureRepository.findBySectionIdAndTypeAndNotDeletedOrderByOrder(sectionId, type).stream()
+        return lectureRepository.findBySectionIdAndTypeAndDeletedAtIsNullOrderByOrderAsc(sectionId, type).stream()
                 .map(LectureResponseDTO::from)
                 .collect(Collectors.toList());
     }
 
     // 특정 코스의 모든 렉처 조회
     public List<LectureResponseDTO> getLecturesByCourse(Long courseId) {
-        return lectureRepository.findAllByCourseIdAndNotDeleted(courseId).stream()
+        return lectureRepository.findBySectionCourseIdAndDeletedAtIsNullAndSectionDeletedAtIsNullOrderBySectionOrderAscOrderAsc(courseId).stream()
                 .map(LectureResponseDTO::from)
                 .collect(Collectors.toList());
     }
@@ -106,7 +103,7 @@ public class LectureServiceImpl implements LectureService{
     // 렉처 수정
     @Transactional
     public LectureResponseDTO updateLecture(Long id, LectureUpdateRequestDTO requestDTO) {
-        Lecture lecture = lectureRepository.findByIdAndNotDeleted(id)
+        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new LectureNotFoundException(id));
 
         lecture.updateDetails(requestDTO);
@@ -118,7 +115,7 @@ public class LectureServiceImpl implements LectureService{
     // 렉처 삭제 (Soft Delete)
     @Transactional
     public void deleteLecture(Long id) {
-        Lecture lecture = lectureRepository.findByIdAndNotDeleted(id)
+        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new LectureNotFoundException(id));
 
         lecture.softDelete();
@@ -143,11 +140,12 @@ public class LectureServiceImpl implements LectureService{
             if (lecture == null) {
                 throw new LectureNotFoundException(lectureId);
             }
+
             if(!Objects.equals(lecture.getSection().getId(), sectionId)){
                 throw new LectureNotIncludeSectionException(lecture.getId(),sectionId);
             }
-            lecture.updateOrder(i+1);
+
+            lecture.updateOrder(i);
         }
     }
-
 }

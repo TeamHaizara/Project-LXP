@@ -21,7 +21,7 @@ public class LectureController {
     }
 
     // 렉처 생성
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<LectureResponseDTO> createLecture(@Valid @RequestBody LectureCreateRequestDTO requestDTO) {
         LectureResponseDTO response = lectureServiceImpl.createLecture(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
