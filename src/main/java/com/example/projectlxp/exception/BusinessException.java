@@ -44,16 +44,20 @@ public class BusinessException extends RuntimeException {
     }
 
     @Deprecated(forRemoval = false)
-    public BusinessException(ErrorCode exceptionCode, String param1, String param2){
+    public BusinessException(ErrorCode exceptionCode, String param1, String param2) {
         this.message = String.format(exceptionCode.getMessage(), param1, param2);
         this.httpStatus = exceptionCode.getStatus();
     }
-  
+
     private BusinessException(Builder builder) {
         super(builder.getMessage(), builder.cause);
         this.httpStatus = builder.httpStatus;
         this.message = builder.getMessage();
         this.cause = builder.cause;
+    }
+
+    public static Builder builder(ErrorCode errorCode) {
+        return new Builder(errorCode);
     }
 
     public static class Builder {
@@ -81,6 +85,11 @@ public class BusinessException extends RuntimeException {
 
         public Builder withField(String... fields) {
             this.params.addAll(Arrays.asList(fields));
+            return this;
+        }
+
+        public Builder withCount(int count) {
+            this.params.add(count);
             return this;
         }
 

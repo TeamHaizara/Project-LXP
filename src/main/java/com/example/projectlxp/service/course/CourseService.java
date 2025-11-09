@@ -45,7 +45,9 @@ public class CourseService {
     // 코스 조회 (ID)
     public CourseDetailResponse getCourseById(Long id) {
         Course course = courseRepository.findByIdWithSectionsAndLectures(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
         return CourseDetailResponse.from(course);
     }
 
@@ -99,7 +101,9 @@ public class CourseService {
     @Transactional
     public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
         course.updateBasicInfo(
                 request.getTitle(),
                 request.getDescription(),
@@ -113,7 +117,9 @@ public class CourseService {
     @Transactional
     public CourseDetailResponse publishCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
         course.toPublished();
         return CourseDetailResponse.from(course);
     }
@@ -122,7 +128,9 @@ public class CourseService {
     @Transactional
     public CourseDetailResponse archiveCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
         course.toArchived();
         return CourseDetailResponse.from(course);
     }
@@ -131,7 +139,9 @@ public class CourseService {
     @Transactional
     public void deleteCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
         int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
         course.toDeleted(enrolledUserCount); // validation + status transition first
         course.cascadeSoftDelete(); // actual cascade delete

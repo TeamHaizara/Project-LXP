@@ -1,6 +1,7 @@
 package com.example.projectlxp.model.course;
 
 import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
@@ -8,8 +9,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.example.projectlxp.exception.ExceptionCode.*;
 
 @Entity
 @Table(name = "courses")
@@ -141,7 +140,9 @@ public class Course {
     // DELETED로 상태 전이 (enrolled user == 0)
     public void toDeleted(int enrolledUserCount) {
         if (enrolledUserCount > 0) {
-            throw new BusinessException(COURSE_HAS_ENROLLED_STUDENTS, (long) enrolledUserCount);
+            throw BusinessException.builder(ExceptionCode.COURSE_HAS_ENROLLED_STUDENTS)
+                    .withCount(enrolledUserCount)
+                    .build();
         }
         transitionTo(CourseStatus.DELETED);
     }
@@ -155,11 +156,14 @@ public class Course {
     // 상태 전이 규칙 검증 (도메인 규칙만 확인, 사전 조건은 미포함)
     private void validateStatusTransition(CourseStatus newStatus) {
         if (newStatus == null) {
-            throw new BusinessException(COURSE_STATUS_NULL);
+            throw BusinessException.builder(ExceptionCode.COURSE_STATUS_NULL)
+                    .build();
         }
 
         if (!this.status.canTransitionTo(newStatus)) {
-            throw new BusinessException(INVALID_COURSE_STATUS_TRANSITION, this.status.name(), newStatus.name());
+            throw BusinessException.builder(ExceptionCode.INVALID_COURSE_STATUS_TRANSITION)
+                    .withCourseStatus(this.status, newStatus)
+                    .build();
         }
     }
 
