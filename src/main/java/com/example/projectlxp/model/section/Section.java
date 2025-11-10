@@ -9,25 +9,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "sections")
+@Table(name = "section")
 public class Section {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String title;
+
+    @Column(name = "`order`", nullable = false)
+    private Integer order;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(name = "title", nullable = false, length = 255)
-    private String title;
-
-    @Column(name = "order", nullable = false)
-    private Integer order;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Lecture> lectures = new ArrayList<>();
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
@@ -35,31 +35,57 @@ public class Section {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Lecture> lectures = new ArrayList<>();
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    protected Section() {
+    }
+
+    private Section(Course course, String title, Integer order) {
+        this.course = course;
+        this.title = title;
+        this.order = order;
+    }
+
+    public static Section create(Course course, String title, Integer order) {
+        return new Section(course, title, order);
+    }
+
+    public void update(String title, Integer order) {
+        this.title = title;
+        this.order = order;
+    }
 
     public Long getId() {
         return id;
     }
 
-    public void setCourse(Course course) {
-        // TODO
-        return;
+    public String getTitle() {
+        return title;
     }
 
-    public void softDelete() {
-        // TODO
-        return;
+    public Integer getOrder() {
+        return order;
     }
 
     public List<Lecture> getLectures() {
-        // TODO
-        return null;
+        return lectures;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+        this.lectures.forEach(Lecture::softDelete);
     }
 
     public boolean isDeleted() {
-        // TODO
-        return false;
+        return this.deletedAt != null;
     }
-
 }
