@@ -1,0 +1,77 @@
+package com.example.projectlxp.service.section;
+
+import com.example.projectlxp.controller.section.response.SectionResponse;
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ErrorCode;
+import com.example.projectlxp.exception.ExceptionCode;
+import com.example.projectlxp.model.course.Course;
+import com.example.projectlxp.model.section.Section;
+import com.example.projectlxp.model.section.exception.SectionNotFoundException;
+import com.example.projectlxp.repository.course.CourseRepository;
+import com.example.projectlxp.repository.section.SectionRepository;
+import com.example.projectlxp.service.section.dto.SectionServiceDto;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+public class SectionServiceImpl implements SectionService {
+    private final SectionRepository sectionRepository;
+    private final CourseRepository courseRepository;
+
+    public SectionServiceImpl(SectionRepository sectionRepository, CourseRepository courseRepository) {
+        this.sectionRepository = sectionRepository;
+        this.courseRepository = courseRepository;
+    }
+
+    @Override
+    @Transactional
+    public SectionResponse createSection(SectionServiceDto dto) {
+        Course course = courseRepository.findByIdAndNotDeleted(dto.courseId())
+            .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, dto.courseId()));
+
+        Section section = Section.create(course, dto.title(), dto.order());
+
+        return SectionResponse.from(sectionRepository.save(section));
+    }
+
+    @Override
+    @Transactional
+    public SectionResponse updateSection(Long sectionId, SectionServiceDto dto) {
+        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
+            .orElseThrow(() -> new SectionNotFoundException(sectionId));
+        section.update(dto.title(), dto.order());
+        return SectionResponse.from(section);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSection(Long sectionId) {
+        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
+            .orElseThrow(() -> new SectionNotFoundException(sectionId));
+        section.cascadeSoftDelete();
+    }
+
+    @Override
+    @Transactional
+    public void reorderSections(Long courseId, List<Long> sectionIds) {
+        Course course = courseRepository.findByIdAndNotDeleted(courseId)
+            .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, courseId));
+
+        List<Section> sections = sectionRepository.findByCourseIdAndNotDeleted(courseId);
+        Map<Long, Section> sectionMap = sections.stream()
+            .collect(Collectors.toMap(Section::getId, Function.identity()));
+
+        for (int i = 0; i < sectionIds.size(); i++) {
+            Long sectionId = sectionIds.get(i);
+            Section section = sectionMap.get(sectionId);
+            if (section != null) {
+                section.update(section.getTitle(), i + 1);
+            }
+        }
+    }
+}
