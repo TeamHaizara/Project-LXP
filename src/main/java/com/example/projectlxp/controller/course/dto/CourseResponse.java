@@ -1,23 +1,23 @@
-package com.example.projectlxp.service.course.dto;
+package com.example.projectlxp.controller.course.dto;
 
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 
 import java.time.LocalDateTime;
 
-public class CourseListResponse {
+public class CourseResponse {
 
-    private Long id;
-    private Long instructorId;
-    private Long categoryId;
-    private String title;
-    private Integer price;
-    private CourseStatus status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private final Long id;
+    private final Long instructorId;
+    private final Long categoryId;
+    private final String title;
+    private final Integer price;
+    private final CourseStatus status;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     // Constructors
-    public CourseListResponse(Long id, Long instructorId, Long categoryId, String title, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CourseResponse(Long id, Long instructorId, Long categoryId, String title, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.instructorId = instructorId;
         this.categoryId = categoryId;
@@ -29,8 +29,8 @@ public class CourseListResponse {
     }
 
     // Factory method
-    public static CourseListResponse from(Course course) {
-        return new CourseListResponse(
+    public static CourseResponse from(Course course) {
+        return new CourseResponse(
                 course.getId(),
                 course.getInstructorId(),
                 course.getCategoryId(),
@@ -42,7 +42,7 @@ public class CourseListResponse {
         );
     }
 
-    // Getters and Setters
+    // Getters
     public Long getId() {
         return id;
     }

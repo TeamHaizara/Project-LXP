@@ -1,4 +1,4 @@
-package com.example.projectlxp.service.course.dto;
+package com.example.projectlxp.controller.course.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

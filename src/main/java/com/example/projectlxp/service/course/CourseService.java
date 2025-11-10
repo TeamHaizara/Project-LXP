@@ -1,19 +1,15 @@
 package com.example.projectlxp.service.course;
 
+import com.example.projectlxp.controller.course.dto.*;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
-import com.example.projectlxp.service.course.dto.CourseCreateRequest;
-import com.example.projectlxp.service.course.dto.CourseDetailResponse;
-import com.example.projectlxp.service.course.dto.CourseListResponse;
-import com.example.projectlxp.service.course.dto.CourseUpdateRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,50 +47,50 @@ public class CourseService {
         return CourseDetailResponse.from(course);
     }
 
-    // 여러 ID로 코스 목록 조회 (수강 중인 코스 목록용)
-    public List<CourseListResponse> getCoursesByIds(List<Long> courseIds) {
-        if (courseIds == null || courseIds.isEmpty()) {
-            return List.of();
-        }
-        return courseRepository.findByIdsAndNotDeleted(courseIds).stream()
-                .map(CourseListResponse::from)
-                .collect(Collectors.toList());
-    }
-
     // 모든 코스 조회
-    public List<CourseListResponse> getAllCourses() {
-        return courseRepository.findAllNotDeleted().stream()
-                .map(CourseListResponse::from)
-                .collect(Collectors.toList());
+    public CourseListResponse getAllCourses() {
+        return CourseListResponse.from(
+                courseRepository.findAllNotDeleted().stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 강사별 코스 조회
-    public List<CourseListResponse> getCoursesByInstructor(Long instructorId) {
-        return courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
-                .map(CourseListResponse::from)
-                .collect(Collectors.toList());
+    public CourseListResponse getCoursesByInstructor(Long instructorId) {
+        return CourseListResponse.from(
+                courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 카테고리별 코스 조회
-    public List<CourseListResponse> getCoursesByCategory(Long categoryId) {
-        return courseRepository.findByCategoryIdAndNotDeleted(categoryId).stream()
-                .map(CourseListResponse::from)
-                .collect(Collectors.toList());
+    public CourseListResponse getCoursesByCategory(Long categoryId) {
+        return CourseListResponse.from(
+                courseRepository.findByCategoryIdAndNotDeleted(categoryId).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 상태별 코스 조회
-    public List<CourseListResponse> getCoursesByStatus(String status) {
+    public CourseListResponse getCoursesByStatus(String status) {
         CourseStatus courseStatus = CourseStatus.from(status);
-        return courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
-                .map(CourseListResponse::from)
-                .collect(Collectors.toList());
+        return CourseListResponse.from(
+                courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 제목 검색
-    public List<CourseListResponse> searchCoursesByTitle(String keyword) {
-        return courseRepository.searchByTitleAndNotDeleted(keyword).stream()
-                .map(CourseListResponse::from)
-                .collect(Collectors.toList());
+    public CourseListResponse searchCoursesByTitle(String keyword) {
+        return CourseListResponse.from(
+                courseRepository.searchByTitleAndNotDeleted(keyword).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 코스 수정
@@ -120,7 +116,7 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
-        course.toPublished();
+        course.publish();
         return CourseDetailResponse.from(course);
     }
 
@@ -131,7 +127,7 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
-        course.toArchived();
+        course.archive();
         return CourseDetailResponse.from(course);
     }
 
@@ -143,8 +139,7 @@ public class CourseService {
                         .withId(id)
                         .build());
         int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
-        course.toDeleted(enrolledUserCount); // validation + status transition first
-        course.cascadeSoftDelete(); // actual cascade delete
+        course.delete(enrolledUserCount); // validation + status transition + cascade delete
     }
 
 }

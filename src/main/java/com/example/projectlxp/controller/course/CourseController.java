@@ -1,16 +1,14 @@
 package com.example.projectlxp.controller.course;
 
+import com.example.projectlxp.controller.course.dto.CourseCreateRequest;
+import com.example.projectlxp.controller.course.dto.CourseDetailResponse;
+import com.example.projectlxp.controller.course.dto.CourseListResponse;
+import com.example.projectlxp.controller.course.dto.CourseUpdateRequest;
 import com.example.projectlxp.service.course.CourseService;
-import com.example.projectlxp.service.course.dto.CourseCreateRequest;
-import com.example.projectlxp.service.course.dto.CourseDetailResponse;
-import com.example.projectlxp.service.course.dto.CourseListResponse;
-import com.example.projectlxp.service.course.dto.CourseUpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
@@ -38,40 +36,40 @@ public class CourseController {
 
     // 모든 코스 조회
     @GetMapping
-    public ResponseEntity<List<CourseListResponse>> getAllCourses() {
-        List<CourseListResponse> response = courseService.getAllCourses();
+    public ResponseEntity<CourseListResponse> getAllCourses() {
+        CourseListResponse response = courseService.getAllCourses();
         return ResponseEntity.ok(response);
     }
 
     // 강사별 코스 조회
     @GetMapping("/instructors/{instructor_id}")
-    public ResponseEntity<List<CourseListResponse>> getCoursesByInstructor(
+    public ResponseEntity<CourseListResponse> getCoursesByInstructor(
             @PathVariable("instructor_id") Long instructorId
     ) {
-        List<CourseListResponse> response = courseService.getCoursesByInstructor(instructorId);
+        CourseListResponse response = courseService.getCoursesByInstructor(instructorId);
         return ResponseEntity.ok(response);
     }
 
     // 카테고리별 코스 조회
     @GetMapping("/categories/{category_id}")
-    public ResponseEntity<List<CourseListResponse>> getCoursesByCategory(
+    public ResponseEntity<CourseListResponse> getCoursesByCategory(
             @PathVariable("category_id") Long categoryId
     ) {
-        List<CourseListResponse> response = courseService.getCoursesByCategory(categoryId);
+        CourseListResponse response = courseService.getCoursesByCategory(categoryId);
         return ResponseEntity.ok(response);
     }
 
     // 상태별 코스 조회
     @GetMapping("/status")
-    public ResponseEntity<List<CourseListResponse>> getCoursesByStatus(@RequestParam String status) {
-        List<CourseListResponse> response = courseService.getCoursesByStatus(status);
+    public ResponseEntity<CourseListResponse> getCoursesByStatus(@RequestParam String status) {
+        CourseListResponse response = courseService.getCoursesByStatus(status);
         return ResponseEntity.ok(response);
     }
 
     // 코스 검색 (제목)
     @GetMapping("/search")
-    public ResponseEntity<List<CourseListResponse>> searchCourses(@RequestParam String keyword) {
-        List<CourseListResponse> response = courseService.searchCoursesByTitle(keyword);
+    public ResponseEntity<CourseListResponse> searchCourses(@RequestParam String keyword) {
+        CourseListResponse response = courseService.searchCoursesByTitle(keyword);
         return ResponseEntity.ok(response);
     }
 
@@ -83,13 +81,6 @@ public class CourseController {
     ) {
         CourseDetailResponse response = courseService.updateCourse(courseId, requestDTO);
         return ResponseEntity.ok(response);
-    }
-
-    // 코스 삭제
-    @DeleteMapping("/{course_id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable("course_id") Long courseId) {
-        courseService.deleteCourse(courseId);
-        return ResponseEntity.noContent().build();
     }
 
     // 코스 발행
@@ -105,4 +96,12 @@ public class CourseController {
         CourseDetailResponse response = courseService.archiveCourse(courseId);
         return ResponseEntity.ok(response);
     }
+
+    // 코스 삭제
+    @DeleteMapping("/{course_id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable("course_id") Long courseId) {
+        courseService.deleteCourse(courseId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

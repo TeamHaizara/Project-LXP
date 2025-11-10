@@ -1,4 +1,4 @@
-package com.example.projectlxp.service.course.dto;
+package com.example.projectlxp.controller.course.dto;
 
 public class CourseUpdateRequest {
 

@@ -2,7 +2,6 @@ package com.example.projectlxp.model.course;
 
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
-import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
 
@@ -77,36 +76,6 @@ public class Course {
         return deletedAt != null;
     }
 
-    /**
-     * Performs a soft delete on this course and cascades the deletion to all associated sections and lectures.
-     * <p>
-     * This method sets the {@code deletedAt} timestamp for the course, all its sections, and all lectures
-     * within those sections.
-     * <p>
-     * <b>IMPORTANT:</b> This method accesses lazily-loaded collections ({@code sections}, {@code lectures}).
-     * It <b>MUST</b> be called within an active transaction context to avoid {@code LazyInitializationException}.
-     * <p>
-     * <b>Recommended Usage:</b>
-     * <ul>
-     *   <li>Call via {@link com.example.projectlxp.service.course.CourseService#deleteCourse(Long)}
-     *       which ensures proper transaction management and eager loading of associations.</li>
-     *   <li>If calling directly, ensure the calling method is annotated with {@code @Transactional}
-     *       and the course entity is loaded with its associations (e.g., using fetch join).</li>
-     * </ul>
-     *
-     * @throws org.hibernate.LazyInitializationException if called outside an active transaction context
-     *                                                   or if the sections/lectures collections are not initialized
-     * @tl;dr 트랜잭션 밖에서 호출하면 예외 터짐
-     * @see com.example.projectlxp.service.course.CourseService#deleteCourse(Long)
-     */
-    public void cascadeSoftDelete() {
-        this.deletedAt = LocalDateTime.now();
-        this.sections.forEach(section -> {
-            section.softDelete();
-            section.getLectures().forEach(Lecture::softDelete);
-        });
-    }
-
     // Business logic methods
     public void updateBasicInfo(String title, String description, Integer price, Long categoryId) {
         if (title != null) {
@@ -123,39 +92,73 @@ public class Course {
         }
     }
 
-    // PUBLISHED로 상태 전이
-    public void toPublished() {
+    public void publish() {
         transitionTo(CourseStatus.PUBLISHED);
     }
 
-    // ARCHIVED로 상태 전이
-    public void toArchived() {
+    public void archive() {
         transitionTo(CourseStatus.ARCHIVED);
     }
 
-    // DELETED로 상태 전이 (enrolled user == 0)
-    public void toDeleted(int enrolledUserCount) {
+    /**
+     * Performs a soft delete on this course and cascades the deletion to all associated sections and lectures.
+     * <p>
+     * This method sets the {@code deletedAt} timestamp for the course, all its sections, and all lectures
+     * within those sections. The course status is transitioned to {@code DELETED}.
+     * <p>
+     * <b>IMPORTANT:</b> This method accesses lazily-loaded collections ({@code sections}, {@code lectures}).
+     * It <b>MUST</b> be called within an active transaction context to avoid {@code LazyInitializationException}.
+     * <p>
+     * <b>Recommended Usage:</b>
+     * <ul>
+     *   <li>Call via {@link com.example.projectlxp.service.course.CourseService#deleteCourse(Long)}
+     *       which ensures proper transaction management and eager loading of associations.</li>
+     *   <li>If calling directly, ensure the calling method is annotated with {@code @Transactional}
+     *       and the course entity is loaded with its associations (e.g., using fetch join).</li>
+     * </ul>
+     *
+     * @param enrolledUserCount the number of users currently enrolled in this course
+     * @throws BusinessException                         if {@code enrolledUserCount > 0}, preventing deletion of courses with active enrollments
+     * @throws org.hibernate.LazyInitializationException if called outside an active transaction context
+     *                                                   or if the sections/lectures collections are not initialized
+     * @see com.example.projectlxp.service.course.CourseService#deleteCourse(Long)
+     */
+    public void delete(int enrolledUserCount) {
         if (enrolledUserCount > 0) {
             throw BusinessException.builder(ExceptionCode.COURSE_HAS_ENROLLED_STUDENTS)
                     .withCount(enrolledUserCount)
                     .build();
         }
         transitionTo(CourseStatus.DELETED);
+        this.deletedAt = LocalDateTime.now();
+        cascadeSoftDelete();
     }
 
-    // 상태 전이 메서드
+    /**
+     * Internal helper method to cascade soft delete to all associated sections and lectures.
+     * <p>
+     * This method is called internally by {@link #delete(int)} and should not be invoked directly.
+     */
+    private void cascadeSoftDelete() {
+        this.sections.forEach(section -> {
+            section.cascadeSoftDelete();
+            // section 하위의 lecture들에 대한 cascade deletion은 section에 위임함
+            // section.getLectures().forEach(Lecture::softDelete);
+
+        });
+    }
+
     private void transitionTo(CourseStatus newStatus) {
         validateStatusTransition(newStatus);
         this.status = newStatus;
     }
 
-    // 상태 전이 규칙 검증 (도메인 규칙만 확인, 사전 조건은 미포함)
+    // 상태 전이 규칙 검증 (도메인 규칙만 확인, 사전 조건 미포함)
     private void validateStatusTransition(CourseStatus newStatus) {
         if (newStatus == null) {
             throw BusinessException.builder(ExceptionCode.COURSE_STATUS_NULL)
                     .build();
         }
-
         if (!this.status.canTransitionTo(newStatus)) {
             throw BusinessException.builder(ExceptionCode.INVALID_COURSE_STATUS_TRANSITION)
                     .withCourseStatus(this.status, newStatus)

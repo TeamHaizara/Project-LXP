@@ -1,4 +1,4 @@
-package com.example.projectlxp.service.course.dto;
+package com.example.projectlxp.controller.course.dto;
 
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
@@ -10,16 +10,16 @@ import java.util.stream.Collectors;
 
 public class CourseDetailResponse {
 
-    private Long id;
-    private Long instructorId;
-    private Long categoryId;
-    private String title;
-    private String description;
-    private Integer price;
-    private CourseStatus status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private List<SectionResponseDTO> sections;
+    private final Long id;
+    private final Long instructorId;
+    private final Long categoryId;
+    private final String title;
+    private final String description;
+    private final Integer price;
+    private final CourseStatus status;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
+    private final List<SectionResponseDTO> sections;
 
     // Constructor
     public CourseDetailResponse(Long id, Long instructorId, Long categoryId, String title, String description, Integer price, CourseStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, List<SectionResponseDTO> sections) {

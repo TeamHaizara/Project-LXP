@@ -47,7 +47,7 @@ public class Section {
         return;
     }
 
-    public void softDelete() {
+    public void cascadeSoftDelete() {
         // TODO
         return;
     }
