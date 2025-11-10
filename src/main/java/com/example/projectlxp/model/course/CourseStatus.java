@@ -3,11 +3,12 @@ package com.example.projectlxp.model.course;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 
+import com.example.projectlxp.exception.Status;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public enum CourseStatus {
+public enum CourseStatus implements Status {
 
     DELETED("완전히 삭제되어 조회 불가한 상태"),
     DRAFT("발행되지 않은 임시 작성 상태"),
@@ -22,6 +23,10 @@ public enum CourseStatus {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getName() {
+        return this.name();
     }
 
     // 문자열에서 CourseStatus로 변환
