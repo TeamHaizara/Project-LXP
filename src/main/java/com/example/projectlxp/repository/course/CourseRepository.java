@@ -2,6 +2,7 @@ package com.example.projectlxp.repository.course;
 
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
+import com.example.projectlxp.model.section.Section;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

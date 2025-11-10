@@ -49,10 +49,10 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
-        
         // Step 2: Fetch lectures for all sections (solves MultipleBagFetchException)
+        // 따로 값을 저장하지 않아도 transactional context 안에서 매핑됨
         courseRepository.findSectionsWithLecturesByCourseId(id);
-        
+
         return CourseDetailResponse.from(course);
     }
 
