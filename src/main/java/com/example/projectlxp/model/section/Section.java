@@ -29,6 +29,9 @@ public class Section {
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -37,7 +40,7 @@ public class Section {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime createdAt = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
