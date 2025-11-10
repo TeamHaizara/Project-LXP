@@ -1,5 +1,8 @@
 package com.example.projectlxp.model.course;
 
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,14 +27,14 @@ public enum CourseStatus {
     // 문자열에서 CourseStatus로 변환
     public static CourseStatus from(String status) {
         if (status == null || status.isBlank()) {
-            // TODO - use custom exception
-            throw new IllegalArgumentException("상태 값은 null이거나 공백일 수 없습니다.");
+            throw BusinessException.builder(ExceptionCode.COURSE_STATUS_NULL).build();
         }
         try {
             return CourseStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            // TODO - use custom exception
-            throw new IllegalArgumentException("유효하지 않은 코스 상태입니다: " + status);
+            throw BusinessException.builder(ExceptionCode.INVALID_COURSE_STATUS)
+                    .withField(status)
+                    .build();
         }
     }
 
@@ -47,10 +50,9 @@ public enum CourseStatus {
             return false;
         }
         return switch (this) {
-            case DRAFT -> newStatus == PUBLISHED || newStatus == DELETED;
+            case DRAFT, ARCHIVED -> newStatus == PUBLISHED || newStatus == DELETED;
             case PUBLISHED -> newStatus == ARCHIVED || newStatus == DELETED;
-            case ARCHIVED -> newStatus == PUBLISHED || newStatus == DELETED;
-            case DELETED -> false;
+            default -> throw BusinessException.builder(ExceptionCode.INVALID_COURSE_STATUS).build();
         };
     }
 
@@ -59,9 +61,8 @@ public enum CourseStatus {
      */
     public Set<CourseStatus> getAvailableTransitions() {
         return switch (this) {
-            case DRAFT -> new HashSet<>(Arrays.asList(PUBLISHED, DELETED));
+            case DRAFT, ARCHIVED -> new HashSet<>(Arrays.asList(PUBLISHED, DELETED));
             case PUBLISHED -> new HashSet<>(Arrays.asList(ARCHIVED, DELETED));
-            case ARCHIVED -> new HashSet<>(Arrays.asList(PUBLISHED, DELETED));
             case DELETED -> new HashSet<>();
         };
     }

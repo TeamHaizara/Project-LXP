@@ -43,6 +43,12 @@ public class BusinessException extends RuntimeException {
         this.httpStatus = exceptionCode.getStatus();
     }
 
+    @Deprecated(forRemoval = false)
+    public BusinessException(ErrorCode exceptionCode, String param1, String param2) {
+        this.message = String.format(exceptionCode.getMessage(), param1, param2);
+        this.httpStatus = exceptionCode.getStatus();
+    }
+
     private BusinessException(Builder builder) {
         super(builder.getMessage(), builder.cause);
         this.httpStatus = builder.httpStatus;
@@ -52,9 +58,15 @@ public class BusinessException extends RuntimeException {
 
     public interface BusinessExceptionBuilder {
         BusinessExceptionBuilder withId(Long... ids);
+
         BusinessExceptionBuilder withCourseStatus(CourseStatus... statuses);
+
         BusinessExceptionBuilder withField(String... fields);
+
+        BusinessExceptionBuilder withCount(int count);
+
         BusinessExceptionBuilder withCause(Throwable cause);
+
         BusinessException build();
     }
 
@@ -87,6 +99,11 @@ public class BusinessException extends RuntimeException {
 
         public Builder withField(String... fields) {
             this.params.addAll(Arrays.asList(fields));
+            return this;
+        }
+
+        public Builder withCount(int count) {
+            this.params.add(count);
             return this;
         }
 
