@@ -53,7 +53,7 @@ public class SectionServiceImpl implements SectionService {
     public void deleteSection(Long sectionId) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
             .orElseThrow(() -> new SectionNotFoundException(sectionId));
-        section.softDelete();
+        section.cascadeSoftDelete();
     }
 
     @Override

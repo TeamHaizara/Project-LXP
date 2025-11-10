@@ -80,9 +80,9 @@ public class Section {
         return lectures;
     }
 
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
+    public void cascadeSoftDelete() {
         this.lectures.forEach(Lecture::softDelete);
+        this.deletedAt = LocalDateTime.now();
     }
 
     public boolean isDeleted() {
