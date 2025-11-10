@@ -107,9 +107,12 @@ public class LectureServiceImpl implements LectureService {
 
     // 렉처 수정
     @Transactional
-    public LectureResponse updateLecture(Long lectureId, LectureUpdateRequest requestDTO) {
+    public LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO) {
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
+
+        // sectionId 일치 검증
+        validateLectureBelongsToSection(lecture, sectionId);
 
         lecture.updateDetails(requestDTO);
 
@@ -119,9 +122,12 @@ public class LectureServiceImpl implements LectureService {
 
     // 렉처 삭제 (Soft Delete)
     @Transactional
-    public void deleteLecture(Long lectureId) {
+    public void deleteLecture(Long sectionId, Long lectureId) {
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
+
+        // sectionId 일치 검증
+        validateLectureBelongsToSection(lecture, sectionId);
 
         lecture.softDelete();
         lectureRepository.save(lecture);
@@ -170,6 +176,14 @@ public class LectureServiceImpl implements LectureService {
 
         if (!Objects.equals(lecture.getSection().getId(), sectionId)) {
             throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(), sectionId)
+                    .build();
+        }
+    }
+
+    private void validateLectureBelongsToSection(Lecture lecture, Long expectedSectionId) {
+        if (!lecture.getSection().getId().equals(expectedSectionId)) {
+            throw BusinessException.builder(ExceptionCode.LECTURE_NOT_IN_SECTION)
+                    .withId(lecture.getId(), expectedSectionId)
                     .build();
         }
     }
