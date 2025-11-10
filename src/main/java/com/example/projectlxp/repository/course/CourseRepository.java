@@ -45,7 +45,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByInstructorIdAndStatusAndNotDeleted(@Param("instructorId") Long instructorId, @Param("status") CourseStatus status);
 
     // 제목으로 검색 (LIKE, 삭제되지 않은 것만)
-    @Query("SELECT c FROM Course c WHERE c.title LIKE %:keyword% AND c.deletedAt IS NULL")
+    @Query("SELECT c FROM Course c WHERE c.title LIKE CONCAT('%', :keyword, '%') AND c.deletedAt IS NULL")
     List<Course> searchByTitleAndNotDeleted(@Param("keyword") String keyword);
 
     // 여러 ID로 코스 조회 (수강 중인 코스 목록용)
