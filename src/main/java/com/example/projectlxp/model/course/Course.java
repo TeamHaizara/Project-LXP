@@ -161,7 +161,7 @@ public class Course {
         }
         if (!this.status.canTransitionTo(newStatus)) {
             throw BusinessException.builder(ExceptionCode.INVALID_COURSE_STATUS_TRANSITION)
-                    .withCourseStatus(this.status, newStatus)
+                    .withStatus(this.status, newStatus)
                     .build();
         }
     }
