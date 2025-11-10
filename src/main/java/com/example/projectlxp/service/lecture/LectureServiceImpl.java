@@ -1,23 +1,25 @@
 package com.example.projectlxp.service.lecture;
 
 import com.example.projectlxp.controller.lecture.request.LectureCreateRequest;
+import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
-import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
 import com.example.projectlxp.repository.lecture.LectureRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
