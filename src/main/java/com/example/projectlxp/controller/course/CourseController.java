@@ -1,9 +1,9 @@
 package com.example.projectlxp.controller.course;
 
-import com.example.projectlxp.controller.course.dto.CourseCreateRequest;
-import com.example.projectlxp.controller.course.dto.CourseDetailResponse;
-import com.example.projectlxp.controller.course.dto.CourseListResponse;
-import com.example.projectlxp.controller.course.dto.CourseUpdateRequest;
+import com.example.projectlxp.controller.course.request.CourseCreateRequest;
+import com.example.projectlxp.controller.course.request.CourseUpdateRequest;
+import com.example.projectlxp.controller.course.response.CourseDetailResponse;
+import com.example.projectlxp.controller.course.response.CourseListResponse;
 import com.example.projectlxp.service.course.CourseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

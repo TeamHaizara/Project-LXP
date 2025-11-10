@@ -1,6 +1,10 @@
 package com.example.projectlxp.service.course;
 
-import com.example.projectlxp.controller.course.dto.*;
+import com.example.projectlxp.controller.course.request.CourseCreateRequest;
+import com.example.projectlxp.controller.course.request.CourseUpdateRequest;
+import com.example.projectlxp.controller.course.response.CourseDetailResponse;
+import com.example.projectlxp.controller.course.response.CourseListResponse;
+import com.example.projectlxp.controller.course.response.CourseResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
