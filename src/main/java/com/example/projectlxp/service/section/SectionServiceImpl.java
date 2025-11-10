@@ -2,7 +2,6 @@ package com.example.projectlxp.service.section;
 
 import com.example.projectlxp.controller.section.response.SectionResponse;
 import com.example.projectlxp.exception.BusinessException;
-import com.example.projectlxp.exception.ErrorCode;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.section.Section;
@@ -34,6 +33,11 @@ public class SectionServiceImpl implements SectionService {
         Course course = courseRepository.findByIdAndNotDeleted(dto.courseId())
             .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, dto.courseId()));
 
+        // 섹션 순서(order) 중복 검증
+        if (sectionRepository.existsByCourseIdAndOrderAndDeletedAtIsNull(dto.courseId(), dto.order())) {
+            throw new BusinessException(ExceptionCode.DUPLICATE_SECTION_ORDER, Long.valueOf(dto.order()));
+        }
+
         Section section = Section.create(course, dto.title(), dto.order());
 
         return SectionResponse.from(sectionRepository.save(section));
@@ -44,6 +48,14 @@ public class SectionServiceImpl implements SectionService {
     public SectionResponse updateSection(Long sectionId, SectionServiceDto dto) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
             .orElseThrow(() -> new SectionNotFoundException(sectionId));
+
+        // 섹션 순서(order)를 변경하는 경우에만 중복 검증
+        if (!section.getOrder().equals(dto.order())) {
+            if (sectionRepository.existsByCourseIdAndOrderAndDeletedAtIsNull(section.getCourse().getId(), dto.order())) {
+                throw new BusinessException(ExceptionCode.DUPLICATE_SECTION_ORDER, Long.valueOf(dto.order()));
+            }
+        }
+
         section.update(dto.title(), dto.order());
         return SectionResponse.from(section);
     }

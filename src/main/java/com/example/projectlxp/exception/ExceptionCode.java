@@ -13,6 +13,7 @@ public enum ExceptionCode implements ErrorCode {
 
     // Section
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: "),
+    DUPLICATE_SECTION_ORDER(HttpStatus.CONFLICT, "Duplicate section order: %d"),
 
     // Lecture
     

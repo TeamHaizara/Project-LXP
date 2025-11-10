@@ -79,6 +79,10 @@ public class Section {
         return order;
     }
 
+    public Course getCourse() {
+        return course;
+    }
+
     public List<Lecture> getLectures() {
         return lectures;
     }
