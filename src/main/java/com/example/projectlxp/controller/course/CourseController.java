@@ -142,7 +142,7 @@ public class CourseController {
             @PathVariable Long sectionId,
             @Valid @RequestBody SectionUpdateRequest request
     ) {
-        SectionResponse response = sectionService.updateSection(sectionId, request.toDto());
+        SectionResponse response = sectionService.updateSection(courseId, sectionId, request.toDto());
         return ResponseEntity.ok(response);
     }
 
@@ -152,7 +152,7 @@ public class CourseController {
             @PathVariable Long courseId,
             @PathVariable Long sectionId
     ) {
-        sectionService.deleteSection(sectionId);
+        sectionService.deleteSection(courseId, sectionId);
         return ResponseEntity.noContent().build();
     }
 
@@ -187,7 +187,7 @@ public class CourseController {
             @PathVariable Long lectureId,
             @Valid @RequestBody LectureUpdateRequest request
     ) {
-        LectureResponse response = lectureService.updateLecture(lectureId, request);
+        LectureResponse response = lectureService.updateLecture(sectionId, lectureId, request);
         return ResponseEntity.ok(response);
     }
 
@@ -198,7 +198,7 @@ public class CourseController {
             @PathVariable Long sectionId,
             @PathVariable Long lectureId
     ) {
-        lectureService.deleteLecture(lectureId);
+        lectureService.deleteLecture(sectionId, lectureId);
         return ResponseEntity.noContent().build();
     }
 
