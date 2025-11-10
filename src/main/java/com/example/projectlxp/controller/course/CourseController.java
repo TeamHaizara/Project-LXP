@@ -4,20 +4,39 @@ import com.example.projectlxp.controller.course.request.CourseCreateRequest;
 import com.example.projectlxp.controller.course.request.CourseUpdateRequest;
 import com.example.projectlxp.controller.course.response.CourseDetailResponse;
 import com.example.projectlxp.controller.course.response.CourseListResponse;
+import com.example.projectlxp.controller.lecture.request.LectureCreateRequest;
+import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
+import com.example.projectlxp.controller.lecture.response.LectureListResponse;
+import com.example.projectlxp.controller.lecture.response.LectureResponse;
+import com.example.projectlxp.controller.section.request.SectionCreateRequest;
+import com.example.projectlxp.controller.section.request.SectionUpdateRequest;
+import com.example.projectlxp.controller.section.response.SectionResponse;
 import com.example.projectlxp.service.course.CourseService;
+import com.example.projectlxp.service.lecture.LectureService;
+import com.example.projectlxp.service.section.SectionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
 
     private final CourseService courseService;
+    private final SectionService sectionService;
+    private final LectureService lectureService;
 
-    public CourseController(CourseService courseService) {
+    public CourseController(
+            CourseService courseService,
+            SectionService sectionService,
+            LectureService lectureService
+    ) {
         this.courseService = courseService;
+        this.sectionService = sectionService;
+        this.lectureService = lectureService;
     }
 
     // 코스 생성
@@ -27,15 +46,15 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 코스 조회 (ID)
+    // 코스 상세 조회 (편집 화면용 - 섹션, 렉처 트리 포함)
     @GetMapping("/{course_id}")
     public ResponseEntity<CourseDetailResponse> getCourse(@PathVariable("course_id") Long courseId) {
         CourseDetailResponse response = courseService.getCourseById(courseId);
         return ResponseEntity.ok(response);
     }
 
-    // 모든 코스 조회
-    @GetMapping
+    // 모든 코스 조회 - 안 쓸 지도?
+    @GetMapping("/all")
     public ResponseEntity<CourseListResponse> getAllCourses() {
         CourseListResponse response = courseService.getAllCourses();
         return ResponseEntity.ok(response);
@@ -102,6 +121,106 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable("course_id") Long courseId) {
         courseService.deleteCourse(courseId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ========== Section Management APIs ==========
+
+    // 섹션 생성
+    @PostMapping("/{courseId}/sections")
+    public ResponseEntity<SectionResponse> createSection(
+            @PathVariable Long courseId,
+            @Valid @RequestBody SectionCreateRequest request
+    ) {
+        SectionResponse response = sectionService.createSection(request.toDto(courseId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // 섹션 수정
+    @PutMapping("/{courseId}/sections/{sectionId}")
+    public ResponseEntity<SectionResponse> updateSection(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId,
+            @Valid @RequestBody SectionUpdateRequest request
+    ) {
+        SectionResponse response = sectionService.updateSection(sectionId, request.toDto());
+        return ResponseEntity.ok(response);
+    }
+
+    // 섹션 삭제
+    @DeleteMapping("/{courseId}/sections/{sectionId}")
+    public ResponseEntity<Void> deleteSection(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId
+    ) {
+        sectionService.deleteSection(sectionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 섹션 순서 변경
+    @PutMapping("/{courseId}/sections/reorder")
+    public ResponseEntity<Void> reorderSections(
+            @PathVariable Long courseId,
+            @RequestBody List<Long> sectionIds
+    ) {
+        sectionService.reorderSections(courseId, sectionIds);
+        return ResponseEntity.ok().build();
+    }
+
+    // ========== Lecture Management APIs ==========
+
+    // 렉처 생성
+    @PostMapping("/{courseId}/sections/{sectionId}/lectures")
+    public ResponseEntity<LectureResponse> createLecture(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId,
+            @Valid @RequestBody LectureCreateRequest request
+    ) {
+        LectureResponse response = lectureService.createLecture(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // 렉처 수정
+    @PutMapping("/{courseId}/sections/{sectionId}/lectures/{lectureId}")
+    public ResponseEntity<LectureResponse> updateLecture(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId,
+            @PathVariable Long lectureId,
+            @Valid @RequestBody LectureUpdateRequest request
+    ) {
+        LectureResponse response = lectureService.updateLecture(lectureId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    // 렉처 삭제
+    @DeleteMapping("/{courseId}/sections/{sectionId}/lectures/{lectureId}")
+    public ResponseEntity<Void> deleteLecture(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId,
+            @PathVariable Long lectureId
+    ) {
+        lectureService.deleteLecture(lectureId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 섹션 내 렉처 순서 변경
+    @PutMapping("/{courseId}/sections/{sectionId}/lectures/reorder")
+    public ResponseEntity<Void> reorderLectures(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId,
+            @RequestBody List<Long> lectureIds
+    ) {
+        lectureService.reorderLectures(sectionId, lectureIds);
+        return ResponseEntity.ok().build();
+    }
+
+    // 섹션의 렉처 목록 조회
+    @GetMapping("/{courseId}/sections/{sectionId}/lectures")
+    public ResponseEntity<LectureListResponse> getLecturesBySection(
+            @PathVariable Long courseId,
+            @PathVariable Long sectionId
+    ) {
+        LectureListResponse response = lectureService.getLecturesBySection(sectionId);
+        return ResponseEntity.ok(response);
     }
 
 }
