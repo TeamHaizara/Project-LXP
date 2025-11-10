@@ -1,18 +1,19 @@
 package com.example.projectlxp.service.course;
 
+import com.example.projectlxp.controller.course.request.CourseCreateRequest;
+import com.example.projectlxp.controller.course.request.CourseUpdateRequest;
+import com.example.projectlxp.controller.course.response.CourseDetailResponse;
+import com.example.projectlxp.controller.course.response.CourseListResponse;
+import com.example.projectlxp.controller.course.response.CourseResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 import com.example.projectlxp.repository.course.CourseRepository;
-import com.example.projectlxp.service.course.dto.CourseCreateRequestDTO;
-import com.example.projectlxp.service.course.dto.CourseDetailResponseDTO;
-import com.example.projectlxp.service.course.dto.CourseListResponseDTO;
-import com.example.projectlxp.service.course.dto.CourseUpdateRequestDTO;
+import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,14 +21,16 @@ import java.util.stream.Collectors;
 public class CourseService {
 
     private final CourseRepository courseRepository;
+    private final EnrolledCourseRepository enrolledCourseRepository;
 
-    public CourseService(CourseRepository courseRepository) {
+    public CourseService(CourseRepository courseRepository, EnrolledCourseRepository enrolledCourseRepository) {
         this.courseRepository = courseRepository;
+        this.enrolledCourseRepository = enrolledCourseRepository;
     }
 
     // 코스 생성
     @Transactional
-    public CourseDetailResponseDTO createCourse(CourseCreateRequestDTO requestDTO) {
+    public CourseDetailResponse createCourse(CourseCreateRequest requestDTO) {
         Course course = new Course(
                 requestDTO.getInstructorId(),
                 requestDTO.getCategoryId(),
@@ -36,103 +39,111 @@ public class CourseService {
                 requestDTO.getPrice()
         );
         Course savedCourse = courseRepository.save(course);
-        return CourseDetailResponseDTO.from(savedCourse);
+        return CourseDetailResponse.from(savedCourse);
     }
 
     // 코스 조회 (ID)
-    public CourseDetailResponseDTO getCourseById(Long id) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-        return CourseDetailResponseDTO.from(course);
+    public CourseDetailResponse getCourseById(Long id) {
+        Course course = courseRepository.findByIdWithSectionsAndLectures(id)
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
+        return CourseDetailResponse.from(course);
     }
 
     // 모든 코스 조회
-    public List<CourseListResponseDTO> getAllCourses() {
-        return courseRepository.findAllNotDeleted().stream()
-                .map(CourseListResponseDTO::from)
-                .collect(Collectors.toList());
+    public CourseListResponse getAllCourses() {
+        return CourseListResponse.from(
+                courseRepository.findAllNotDeleted().stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 강사별 코스 조회
-    public List<CourseListResponseDTO> getCoursesByInstructor(Long instructorId) {
-        return courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
-                .map(CourseListResponseDTO::from)
-                .collect(Collectors.toList());
+    public CourseListResponse getCoursesByInstructor(Long instructorId) {
+        return CourseListResponse.from(
+                courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 카테고리별 코스 조회
-    public List<CourseListResponseDTO> getCoursesByCategory(Long categoryId) {
-        return courseRepository.findByCategoryIdAndNotDeleted(categoryId).stream()
-                .map(CourseListResponseDTO::from)
-                .collect(Collectors.toList());
+    public CourseListResponse getCoursesByCategory(Long categoryId) {
+        return CourseListResponse.from(
+                courseRepository.findByCategoryIdAndNotDeleted(categoryId).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 상태별 코스 조회
-    public List<CourseListResponseDTO> getCoursesByStatus(String status) {
+    public CourseListResponse getCoursesByStatus(String status) {
         CourseStatus courseStatus = CourseStatus.from(status);
-        return courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
-                .map(CourseListResponseDTO::from)
-                .collect(Collectors.toList());
+        return CourseListResponse.from(
+                courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 제목 검색
-    public List<CourseListResponseDTO> searchCoursesByTitle(String keyword) {
-        return courseRepository.searchByTitleAndNotDeleted(keyword).stream()
-                .map(CourseListResponseDTO::from)
-                .collect(Collectors.toList());
-    }
-
-    // 여러 ID로 코스 목록 조회 (수강 중인 코스 목록용)
-    public List<CourseListResponseDTO> getCoursesByIds(List<Long> courseIds) {
-        if (courseIds == null || courseIds.isEmpty()) {
-            return List.of();
-        }
-        return courseRepository.findByIdsAndNotDeleted(courseIds).stream()
-                .map(CourseListResponseDTO::from)
-                .collect(Collectors.toList());
+    public CourseListResponse searchCoursesByTitle(String keyword) {
+        return CourseListResponse.from(
+                courseRepository.searchByTitleAndNotDeleted(keyword).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
     }
 
     // 코스 수정
     @Transactional
-    public CourseDetailResponseDTO updateCourse(Long id, CourseUpdateRequestDTO requestDTO) {
+    public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
         course.updateBasicInfo(
-                requestDTO.getTitle(),
-                requestDTO.getDescription(),
-                requestDTO.getPrice(),
-                requestDTO.getCategoryId()
+                request.getTitle(),
+                request.getDescription(),
+                request.getPrice(),
+                request.getCategoryId()
         );
-        return CourseDetailResponseDTO.from(course);
+        return CourseDetailResponse.from(course);
     }
 
     // 코스 발행
     @Transactional
-    public CourseDetailResponseDTO publishCourse(Long id) {
+    public CourseDetailResponse publishCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-        course.toPublished();
-        return CourseDetailResponseDTO.from(course);
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
+        course.publish();
+        return CourseDetailResponse.from(course);
     }
 
     // 코스 아카이빙
     @Transactional
-    public CourseDetailResponseDTO archiveCourse(Long id) {
+    public CourseDetailResponse archiveCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-        course.toArchived();
-        return CourseDetailResponseDTO.from(course);
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
+        course.archive();
+        return CourseDetailResponse.from(course);
     }
 
     // 코스 삭제
     @Transactional
     public void deleteCourse(Long id) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, id));
-        // TODO: Enrollment 엔티티 구현 후 enrolled user 수 조회
-        int enrolledUserCount = 0; // enrollmentRepository.countByCourseId(id);
-        course.cascadeSoftDelete();
-        course.toDeleted(enrolledUserCount);
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(id)
+                        .build());
+        int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
+        course.delete(enrolledUserCount); // validation + status transition + cascade delete
     }
 
 }
