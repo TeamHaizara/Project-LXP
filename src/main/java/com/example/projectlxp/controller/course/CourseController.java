@@ -40,62 +40,46 @@ public class CourseController {
     }
 
     // 코스 생성
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<CourseDetailResponse> createCourse(@Valid @RequestBody CourseCreateRequest requestDTO) {
         CourseDetailResponse response = courseService.createCourse(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 코스 상세 조회 (편집 화면용 - 섹션, 렉처 트리 포함)
-    @GetMapping("/{course_id}")
-    public ResponseEntity<CourseDetailResponse> getCourse(@PathVariable("course_id") Long courseId) {
+    // 코스 목록 조회 (쿼리 파라미터로 필터링)
+    @GetMapping
+    public ResponseEntity<CourseListResponse> getCourses(
+            @RequestParam(required = false) Long instructorId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword
+    ) {
+        CourseListResponse response;
+        if (instructorId != null) {
+            response = courseService.getCoursesByInstructor(instructorId);
+        } else if (categoryId != null) {
+            response = courseService.getCoursesByCategory(categoryId);
+        } else if (status != null) {
+            response = courseService.getCoursesByStatus(status);
+        } else if (keyword != null) {
+            response = courseService.searchCoursesByTitle(keyword);
+        } else {
+            response = courseService.getAllCourses();
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    // 코스 상세 조회 (섹션, 렉처 트리 포함)
+    @GetMapping("/{courseId}")
+    public ResponseEntity<CourseDetailResponse> getCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.getCourseById(courseId);
         return ResponseEntity.ok(response);
     }
 
-    // 모든 코스 조회 - 안 쓸 지도?
-    @GetMapping("/all")
-    public ResponseEntity<CourseListResponse> getAllCourses() {
-        CourseListResponse response = courseService.getAllCourses();
-        return ResponseEntity.ok(response);
-    }
-
-    // 강사별 코스 조회
-    @GetMapping("/instructors/{instructor_id}")
-    public ResponseEntity<CourseListResponse> getCoursesByInstructor(
-            @PathVariable("instructor_id") Long instructorId
-    ) {
-        CourseListResponse response = courseService.getCoursesByInstructor(instructorId);
-        return ResponseEntity.ok(response);
-    }
-
-    // 카테고리별 코스 조회
-    @GetMapping("/categories/{category_id}")
-    public ResponseEntity<CourseListResponse> getCoursesByCategory(
-            @PathVariable("category_id") Long categoryId
-    ) {
-        CourseListResponse response = courseService.getCoursesByCategory(categoryId);
-        return ResponseEntity.ok(response);
-    }
-
-    // 상태별 코스 조회
-    @GetMapping("/status")
-    public ResponseEntity<CourseListResponse> getCoursesByStatus(@RequestParam String status) {
-        CourseListResponse response = courseService.getCoursesByStatus(status);
-        return ResponseEntity.ok(response);
-    }
-
-    // 코스 검색 (제목)
-    @GetMapping("/search")
-    public ResponseEntity<CourseListResponse> searchCourses(@RequestParam String keyword) {
-        CourseListResponse response = courseService.searchCoursesByTitle(keyword);
-        return ResponseEntity.ok(response);
-    }
-
     // 코스 수정
-    @PutMapping("/{course_id}")
+    @PutMapping("/{courseId}")
     public ResponseEntity<CourseDetailResponse> updateCourse(
-            @PathVariable("course_id") Long courseId,
+            @PathVariable Long courseId,
             @Valid @RequestBody CourseUpdateRequest requestDTO
     ) {
         CourseDetailResponse response = courseService.updateCourse(courseId, requestDTO);
@@ -103,22 +87,22 @@ public class CourseController {
     }
 
     // 코스 발행
-    @PostMapping("/{course_id}/publish")
-    public ResponseEntity<CourseDetailResponse> publishCourse(@PathVariable("course_id") Long courseId) {
+    @PostMapping("/{courseId}/publish")
+    public ResponseEntity<CourseDetailResponse> publishCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.publishCourse(courseId);
         return ResponseEntity.ok(response);
     }
 
     // 코스 아카이빙
-    @PostMapping("/{course_id}/archive")
-    public ResponseEntity<CourseDetailResponse> archiveCourse(@PathVariable("course_id") Long courseId) {
+    @PostMapping("/{courseId}/archive")
+    public ResponseEntity<CourseDetailResponse> archiveCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.archiveCourse(courseId);
         return ResponseEntity.ok(response);
     }
 
     // 코스 삭제
-    @DeleteMapping("/{course_id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable("course_id") Long courseId) {
+    @DeleteMapping("/{courseId}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {
         courseService.deleteCourse(courseId);
         return ResponseEntity.noContent().build();
     }
