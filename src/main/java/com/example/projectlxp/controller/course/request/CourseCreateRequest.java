@@ -1,9 +1,9 @@
-package com.example.projectlxp.service.course.dto;
+package com.example.projectlxp.controller.course.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class CourseCreateRequestDTO {
+public class CourseCreateRequest {
 
     @NotNull(message = "강사 ID는 필수입니다.")
     private Long instructorId;
@@ -20,7 +20,7 @@ public class CourseCreateRequestDTO {
     private Integer price;
 
     // Constructors
-    public CourseCreateRequestDTO(Long instructorId, Long categoryId, String title, String description, Integer price) {
+    public CourseCreateRequest(Long instructorId, Long categoryId, String title, String description, Integer price) {
         this.instructorId = instructorId;
         this.categoryId = categoryId;
         this.title = title;
