@@ -58,13 +58,9 @@ public class BusinessException extends RuntimeException {
 
     public interface BusinessExceptionBuilder {
         BusinessExceptionBuilder withId(Long... ids);
-
-        BusinessExceptionBuilder withCourseStatus(CourseStatus... statuses);
-
+        BusinessExceptionBuilder withStatus(Status... statuses);
         BusinessExceptionBuilder withField(String... fields);
-
         BusinessExceptionBuilder withCount(int count);
-
         BusinessExceptionBuilder withCause(Throwable cause);
 
         BusinessException build();
@@ -90,9 +86,9 @@ public class BusinessException extends RuntimeException {
             return this;
         }
 
-        public Builder withCourseStatus(CourseStatus... statuses) {
-            for (CourseStatus status : statuses) {
-                this.params.add(status.name());
+        public Builder withStatus(Status... statuses) {
+            for (Status status : statuses) {
+                this.params.add(status.getName());
             }
             return this;
         }

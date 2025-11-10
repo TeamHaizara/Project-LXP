@@ -1,39 +1,26 @@
-package com.example.projectlxp.service.lecture.dto;
+package com.example.projectlxp.controller.lecture.request;
 
 import com.example.projectlxp.model.lecture.LectureType;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-public class LectureCreateRequestDTO {
+public class LectureUpdateRequest {
 
-    @NotNull(message = "섹션 ID는 필수입니다.")
-    private Long sectionId;
-
-    @NotBlank(message = "렉처 제목은 필수입니다.")
     private String title;
-
     private String description;
-
     private Integer order;
-
-    @NotNull(message = "렉처 타입은 필수입니다.")
     private LectureType type;
-
-    @NotBlank(message = "강의 자료에 해당하는 Url이 필요합니다.")
     private String resourcePath;
 
     @Min(value = 0, message = "영상 길이는 0 이상이어야 합니다.")
     private Integer duration;
 
-    private Boolean isPreviewable = false;
+    private Boolean isPreviewable;
 
     // Constructors
-    public LectureCreateRequestDTO() {
+    public LectureUpdateRequest() {
     }
 
-    public LectureCreateRequestDTO(Long sectionId, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
-        this.sectionId = sectionId;
+    public LectureUpdateRequest(String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
         this.title = title;
         this.description = description;
         this.order = order;
@@ -43,15 +30,7 @@ public class LectureCreateRequestDTO {
         this.isPreviewable = isPreviewable;
     }
 
-    //requestDTO 검증
-    /*TODO*/
-
     // Getters and Setters
-
-    public Long getSectionId() {
-        return sectionId;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -79,4 +58,5 @@ public class LectureCreateRequestDTO {
     public Boolean getIsPreviewable() {
         return isPreviewable;
     }
+
 }
