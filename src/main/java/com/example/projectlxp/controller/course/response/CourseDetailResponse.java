@@ -1,6 +1,6 @@
 package com.example.projectlxp.controller.course.response;
 
-import com.example.projectlxp.controller.section.response.SectionResponse;
+import com.example.projectlxp.controller.section.response.SectionDetailResponse;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
 
@@ -18,14 +18,14 @@ public record CourseDetailResponse(
         CourseStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        List<SectionResponse> sections
+        List<SectionDetailResponse> sections
 ) {
 
     // Factory method
     public static CourseDetailResponse from(Course course) {
-        List<SectionResponse> sections = course.getSections().stream()
+        List<SectionDetailResponse> sections = course.getSections().stream()
                 .filter(section -> !section.isDeleted())
-                .map(SectionResponse::from)
+                .map(SectionDetailResponse::from)
                 .collect(Collectors.toList());
 
         return new CourseDetailResponse(

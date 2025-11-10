@@ -1,0 +1,507 @@
+### Course 1 생성
+POST http://localhost:8080/api/courses
+Content-Type: application/json
+
+{
+  "instructorId": 1,
+  "categoryId": 1,
+  "title": "자바 프로그래밍 기초",
+  "description": "자바 언어의 기본 문법부터 객체지향 프로그래밍까지 체계적으로 학습합니다.",
+  "price": 49900
+}
+
+### Course 1 - Section 1 생성 (코스 ID를 응답에서 확인 후 입력)
+POST http://localhost:8080/api/courses/1/sections
+Content-Type: application/json
+
+{
+  "title": "자바 개발환경 설정 및 기본 문법",
+  "order": 0
+}
+
+### Course 1 - Section 1 - Lecture 1
+POST http://localhost:8080/api/courses/1/sections/1/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 1,
+  "title": "JDK 설치 및 IntelliJ IDEA 설정",
+  "description": "개발 환경을 구축하고 첫 프로그램을 작성해봅니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/java-setup.mp4",
+  "duration": 1200,
+  "isPreviewable": true
+}
+
+### Course 1 - Section 1 - Lecture 2
+POST http://localhost:8080/api/courses/1/sections/1/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 1,
+  "title": "변수와 데이터 타입",
+  "description": "자바의 기본 데이터 타입과 변수 선언 방법을 배웁니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/java-variables.mp4",
+  "duration": 1500,
+  "isPreviewable": false
+}
+
+### Course 1 - Section 1 - Lecture 3
+POST http://localhost:8080/api/courses/1/sections/1/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 1,
+  "title": "연산자와 제어문",
+  "description": "산술, 비교, 논리 연산자와 if, switch, 반복문을 학습합니다.",
+  "order": 2,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/java-operators.mp4",
+  "duration": 1800,
+  "isPreviewable": false
+}
+
+### Course 1 - Section 2 생성
+POST http://localhost:8080/api/courses/1/sections
+Content-Type: application/json
+
+{
+  "title": "객체지향 프로그래밍",
+  "order": 1
+}
+
+### Course 1 - Section 2 - Lecture 1
+POST http://localhost:8080/api/courses/1/sections/2/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 2,
+  "title": "클래스와 객체",
+  "description": "클래스를 정의하고 객체를 생성하는 방법을 배웁니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/java-class-object.mp4",
+  "duration": 2000,
+  "isPreviewable": false
+}
+
+### Course 1 - Section 2 - Lecture 2
+POST http://localhost:8080/api/courses/1/sections/2/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 2,
+  "title": "상속과 다형성",
+  "description": "상속 관계와 오버라이딩, 다형성의 개념을 이해합니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/java-inheritance.mp4",
+  "duration": 2200,
+  "isPreviewable": false
+}
+
+### Course 1 - Section 2 - Lecture 3
+POST http://localhost:8080/api/courses/1/sections/2/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 2,
+  "title": "인터페이스와 추상클래스",
+  "description": "인터페이스와 추상클래스의 차이점과 활용법을 학습합니다.",
+  "order": 2,
+  "type": "DOCUMENT",
+  "resourcePath": "https://example.com/docs/java-interface.pdf",
+  "duration": 0,
+  "isPreviewable": false
+}
+
+### Course 1 - Section 2 - Lecture 4
+POST http://localhost:8080/api/courses/1/sections/2/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 2,
+  "title": "예외 처리",
+  "description": "try-catch-finally를 이용한 예외 처리 방법을 배웁니다.",
+  "order": 3,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/java-exception.mp4",
+  "duration": 1600,
+  "isPreviewable": false
+}
+
+
+### Course 2 생성
+POST http://localhost:8080/api/courses
+Content-Type: application/json
+
+{
+  "instructorId": 2,
+  "categoryId": 2,
+  "title": "React 웹 개발",
+  "description": "React를 활용한 모던 웹 애플리케이션 개발 방법을 익힙니다.",
+  "price": 79900
+}
+
+### Course 2 - Section 1 생성
+POST http://localhost:8080/api/courses/2/sections
+Content-Type: application/json
+
+{
+  "title": "React 시작하기",
+  "order": 0
+}
+
+### Course 2 - Section 1 - Lecture 1
+POST http://localhost:8080/api/courses/2/sections/3/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 3,
+  "title": "React란 무엇인가?",
+  "description": "React의 등장 배경과 핵심 개념을 이해합니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-intro.mp4",
+  "duration": 900,
+  "isPreviewable": true
+}
+
+### Course 2 - Section 1 - Lecture 2
+POST http://localhost:8080/api/courses/2/sections/3/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 3,
+  "title": "개발 환경 설정",
+  "description": "Node.js, npm, create-react-app을 이용한 프로젝트 생성을 배웁니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-setup.mp4",
+  "duration": 1400,
+  "isPreviewable": true
+}
+
+### Course 2 - Section 1 - Lecture 3
+POST http://localhost:8080/api/courses/2/sections/3/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 3,
+  "title": "JSX 문법",
+  "description": "JSX의 기본 문법과 규칙을 학습합니다.",
+  "order": 2,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-jsx.mp4",
+  "duration": 1300,
+  "isPreviewable": false
+}
+
+### Course 2 - Section 2 생성
+POST http://localhost:8080/api/courses/2/sections
+Content-Type: application/json
+
+{
+  "title": "컴포넌트와 Props",
+  "order": 1
+}
+
+### Course 2 - Section 2 - Lecture 1
+POST http://localhost:8080/api/courses/2/sections/4/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 4,
+  "title": "함수형 컴포넌트",
+  "description": "함수형 컴포넌트의 작성법과 활용 방법을 배웁니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-functional-component.mp4",
+  "duration": 1700,
+  "isPreviewable": false
+}
+
+### Course 2 - Section 2 - Lecture 2
+POST http://localhost:8080/api/courses/2/sections/4/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 4,
+  "title": "Props 전달하기",
+  "description": "부모에서 자식으로 데이터를 전달하는 방법을 익힙니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-props.mp4",
+  "duration": 1500,
+  "isPreviewable": false
+}
+
+### Course 2 - Section 2 - Lecture 3
+POST http://localhost:8080/api/courses/2/sections/4/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 4,
+  "title": "컴포넌트 재사용",
+  "description": "재사용 가능한 컴포넌트를 설계하는 방법을 학습합니다.",
+  "order": 2,
+  "type": "DOCUMENT",
+  "resourcePath": "https://example.com/docs/react-reusable-component.pdf",
+  "duration": 0,
+  "isPreviewable": false
+}
+
+### Course 2 - Section 3 생성
+POST http://localhost:8080/api/courses/2/sections
+Content-Type: application/json
+
+{
+  "title": "State와 Hooks",
+  "order": 2
+}
+
+### Course 2 - Section 3 - Lecture 1
+POST http://localhost:8080/api/courses/2/sections/5/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 5,
+  "title": "useState Hook",
+  "description": "상태 관리를 위한 useState Hook의 사용법을 배웁니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-usestate.mp4",
+  "duration": 1800,
+  "isPreviewable": false
+}
+
+### Course 2 - Section 3 - Lecture 2
+POST http://localhost:8080/api/courses/2/sections/5/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 5,
+  "title": "useEffect Hook",
+  "description": "부수 효과를 처리하는 useEffect의 활용법을 익힙니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-useeffect.mp4",
+  "duration": 2100,
+  "isPreviewable": false
+}
+
+### Course 2 - Section 3 - Lecture 3
+POST http://localhost:8080/api/courses/2/sections/5/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 5,
+  "title": "커스텀 Hook 만들기",
+  "description": "재사용 가능한 커스텀 Hook을 작성하는 방법을 학습합니다.",
+  "order": 2,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/react-custom-hook.mp4",
+  "duration": 1900,
+  "isPreviewable": false
+}
+
+
+### Course 3 생성
+POST http://localhost:8080/api/courses
+Content-Type: application/json
+
+{
+  "instructorId": 1,
+  "categoryId": 3,
+  "title": "데이터베이스 설계와 SQL",
+  "description": "관계형 데이터베이스의 설계 원칙과 SQL 쿼리 작성법을 마스터합니다.",
+  "price": 59900
+}
+
+### Course 3 - Section 1 생성
+POST http://localhost:8080/api/courses/3/sections
+Content-Type: application/json
+
+{
+  "title": "데이터베이스 기초",
+  "order": 0
+}
+
+### Course 3 - Section 1 - Lecture 1
+POST http://localhost:8080/api/courses/3/sections/6/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 6,
+  "title": "데이터베이스란 무엇인가?",
+  "description": "데이터베이스의 개념과 DBMS의 종류를 알아봅니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/db-intro.mp4",
+  "duration": 1100,
+  "isPreviewable": true
+}
+
+### Course 3 - Section 1 - Lecture 2
+POST http://localhost:8080/api/courses/3/sections/6/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 6,
+  "title": "관계형 데이터베이스의 구조",
+  "description": "테이블, 행, 열, 키의 개념을 이해합니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/db-structure.mp4",
+  "duration": 1400,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 1 - Lecture 3
+POST http://localhost:8080/api/courses/3/sections/6/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 6,
+  "title": "정규화와 반정규화",
+  "description": "데이터 중복을 제거하는 정규화 과정을 배웁니다.",
+  "order": 2,
+  "type": "DOCUMENT",
+  "resourcePath": "https://example.com/docs/db-normalization.pdf",
+  "duration": 0,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 2 생성
+POST http://localhost:8080/api/courses/3/sections
+Content-Type: application/json
+
+{
+  "title": "SQL 기본 쿼리",
+  "order": 1
+}
+
+### Course 3 - Section 2 - Lecture 1
+POST http://localhost:8080/api/courses/3/sections/7/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 7,
+  "title": "SELECT 문 기초",
+  "description": "데이터를 조회하는 SELECT 문의 기본 문법을 배웁니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-select.mp4",
+  "duration": 1600,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 2 - Lecture 2
+POST http://localhost:8080/api/courses/3/sections/7/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 7,
+  "title": "INSERT, UPDATE, DELETE",
+  "description": "데이터를 추가, 수정, 삭제하는 방법을 익힙니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-crud.mp4",
+  "duration": 1800,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 2 - Lecture 3
+POST http://localhost:8080/api/courses/3/sections/7/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 7,
+  "title": "WHERE 조건절",
+  "description": "조건을 이용한 데이터 필터링 방법을 학습합니다.",
+  "order": 2,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-where.mp4",
+  "duration": 1500,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 2 - Lecture 4
+POST http://localhost:8080/api/courses/3/sections/7/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 7,
+  "title": "ORDER BY와 GROUP BY",
+  "description": "데이터 정렬과 그룹핑 방법을 배웁니다.",
+  "order": 3,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-order-group.mp4",
+  "duration": 1700,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 3 생성
+POST http://localhost:8080/api/courses/3/sections
+Content-Type: application/json
+
+{
+  "title": "고급 SQL",
+  "order": 2
+}
+
+### Course 3 - Section 3 - Lecture 1
+POST http://localhost:8080/api/courses/3/sections/8/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 8,
+  "title": "JOIN의 이해",
+  "description": "INNER JOIN, LEFT JOIN, RIGHT JOIN을 이용한 테이블 결합을 배웁니다.",
+  "order": 0,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-join.mp4",
+  "duration": 2200,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 3 - Lecture 2
+POST http://localhost:8080/api/courses/3/sections/8/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 8,
+  "title": "서브쿼리 활용",
+  "description": "중첩 쿼리를 이용한 복잡한 데이터 조회 방법을 익힙니다.",
+  "order": 1,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-subquery.mp4",
+  "duration": 2000,
+  "isPreviewable": false
+}
+
+### Course 3 - Section 3 - Lecture 3
+POST http://localhost:8080/api/courses/3/sections/8/lectures
+Content-Type: application/json
+
+{
+  "sectionId": 8,
+  "title": "인덱스와 성능 최적화",
+  "description": "인덱스의 개념과 쿼리 성능을 향상시키는 방법을 학습합니다.",
+  "order": 2,
+  "type": "VIDEO",
+  "resourcePath": "https://example.com/videos/sql-index.mp4",
+  "duration": 1900,
+  "isPreviewable": false
+}
+
+### ========================================
+### 데이터 요약
+### ========================================
+### Course 1 (자바 프로그래밍 기초): 2개 섹션, 7개 렉처
+### Course 2 (React 웹 개발): 3개 섹션, 9개 렉처
+### Course 3 (데이터베이스 설계와 SQL): 3개 섹션, 10개 렉처
+### 총 3개 코스, 8개 섹션, 26개 렉처
