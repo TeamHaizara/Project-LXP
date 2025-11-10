@@ -163,7 +163,7 @@ public class CourseController {
             @RequestBody List<Long> sectionIds
     ) {
         sectionService.reorderSections(courseId, sectionIds);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     // ========== Lecture Management APIs ==========
@@ -210,7 +210,7 @@ public class CourseController {
             @RequestBody List<Long> lectureIds
     ) {
         lectureService.reorderLectures(sectionId, lectureIds);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     // 섹션의 렉처 목록 조회
