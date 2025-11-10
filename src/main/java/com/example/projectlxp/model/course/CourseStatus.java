@@ -2,8 +2,8 @@ package com.example.projectlxp.model.course;
 
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
-
 import com.example.projectlxp.exception.Status;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -57,6 +57,7 @@ public enum CourseStatus implements Status {
         return switch (this) {
             case DRAFT, ARCHIVED -> newStatus == PUBLISHED || newStatus == DELETED;
             case PUBLISHED -> newStatus == ARCHIVED || newStatus == DELETED;
+            default -> throw BusinessException.builder(ExceptionCode.INVALID_COURSE_STATUS).build();
         };
     }
 
