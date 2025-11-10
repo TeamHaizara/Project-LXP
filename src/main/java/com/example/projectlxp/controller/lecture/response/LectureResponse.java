@@ -1,11 +1,11 @@
-package com.example.projectlxp.service.lecture.dto;
+package com.example.projectlxp.controller.lecture.response;
 
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 
 import java.time.LocalDateTime;
 
-public class LectureResponseDTO {
+public class LectureResponse {
 
     private Long id;
     private Long sectionId;
@@ -15,15 +15,15 @@ public class LectureResponseDTO {
     private LectureType type;
     private String resourcePath;
     private Integer duration;
-    private Boolean isPreviewable;
+    private Boolean previewable;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // Constructors
-    public LectureResponseDTO() {
+    public LectureResponse() {
     }
 
-    public LectureResponseDTO(Long id, Long sectionId, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public LectureResponse(Long id, Long sectionId, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean previewable, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.sectionId = sectionId;
         this.title = title;
@@ -32,14 +32,14 @@ public class LectureResponseDTO {
         this.type = type;
         this.resourcePath = resourcePath;
         this.duration = duration;
-        this.isPreviewable = isPreviewable;
+        this.previewable = previewable;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     // Factory method
-    public static LectureResponseDTO from(Lecture lecture) {
-        return new LectureResponseDTO(
+    public static LectureResponse from(Lecture lecture) {
+        return new LectureResponse(
                 lecture.getId(),
                 lecture.getSection().getId(),
                 lecture.getTitle(),
@@ -48,7 +48,7 @@ public class LectureResponseDTO {
                 lecture.getType(),
                 lecture.getResourcePath(),
                 lecture.getDuration(),
-                lecture.getIsPreviewable(),
+                lecture.isPreviewable(),
                 lecture.getCreatedAt(),
                 lecture.getUpdatedAt()
         );
@@ -87,8 +87,8 @@ public class LectureResponseDTO {
         return duration;
     }
 
-    public Boolean getIsPreviewable() {
-        return isPreviewable;
+    public Boolean getPreviewable() {
+        return previewable;
     }
 
     public LocalDateTime getCreatedAt() {
