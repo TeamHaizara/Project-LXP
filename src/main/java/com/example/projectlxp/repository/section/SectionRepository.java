@@ -13,4 +13,7 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
     @Query("SELECT s FROM Section s WHERE s.course.id = :courseId AND s.deletedAt IS NULL ORDER BY s.order")
     List<Section> findByCourseIdAndNotDeleted(@Param("courseId") Long courseId);
+
+    // 특정 강좌 내에서 order 값이 중복되는지 확인하기 위한 쿼리
+    boolean existsByCourseIdAndOrderAndDeletedAtIsNull(Long courseId, Integer order);
 }
