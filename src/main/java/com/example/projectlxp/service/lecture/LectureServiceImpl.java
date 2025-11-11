@@ -1,23 +1,25 @@
 package com.example.projectlxp.service.lecture;
 
 import com.example.projectlxp.controller.lecture.request.LectureCreateRequest;
+import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
-import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
 import com.example.projectlxp.repository.lecture.LectureRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -107,9 +109,12 @@ public class LectureServiceImpl implements LectureService {
 
     // 렉처 수정
     @Transactional
-    public LectureResponse updateLecture(Long lectureId, LectureUpdateRequest requestDTO) {
+    public LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO) {
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
+
+        // sectionId 일치 검증
+        validateLectureBelongsToSection(lecture, sectionId);
 
         lecture.updateDetails(requestDTO);
 
@@ -119,9 +124,12 @@ public class LectureServiceImpl implements LectureService {
 
     // 렉처 삭제 (Soft Delete)
     @Transactional
-    public void deleteLecture(Long lectureId) {
+    public void deleteLecture(Long sectionId, Long lectureId) {
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
+
+        // sectionId 일치 검증
+        validateLectureBelongsToSection(lecture, sectionId);
 
         lecture.softDelete();
         lectureRepository.save(lecture);
@@ -170,6 +178,14 @@ public class LectureServiceImpl implements LectureService {
 
         if (!Objects.equals(lecture.getSection().getId(), sectionId)) {
             throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(), sectionId)
+                    .build();
+        }
+    }
+
+    private void validateLectureBelongsToSection(Lecture lecture, Long expectedSectionId) {
+        if (!lecture.getSection().getId().equals(expectedSectionId)) {
+            throw BusinessException.builder(ExceptionCode.LECTURE_NOT_IN_SECTION)
+                    .withId(lecture.getId(), expectedSectionId)
                     .build();
         }
     }

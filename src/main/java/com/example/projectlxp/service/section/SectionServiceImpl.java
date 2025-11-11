@@ -45,9 +45,12 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionResponse updateSection(Long sectionId, SectionServiceDto dto) {
+    public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
             .orElseThrow(() -> new SectionNotFoundException(sectionId));
+
+        // courseId 일치 검증
+        validateSectionBelongsToCourse(section, courseId);
 
         // 섹션 순서(order)를 변경하는 경우에만 중복 검증
         if (!section.getOrder().equals(dto.order())) {
@@ -62,9 +65,13 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public void deleteSection(Long sectionId) {
+    public void deleteSection(Long courseId, Long sectionId) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
             .orElseThrow(() -> new SectionNotFoundException(sectionId));
+
+        // courseId 일치 검증
+        validateSectionBelongsToCourse(section, courseId);
+
         section.cascadeSoftDelete();
     }
 
@@ -84,6 +91,14 @@ public class SectionServiceImpl implements SectionService {
             if (section != null) {
                 section.update(section.getTitle(), i + 1);
             }
+        }
+    }
+
+    private void validateSectionBelongsToCourse(Section section, Long expectedCourseId) {
+        if (!section.getCourse().getId().equals(expectedCourseId)) {
+            throw BusinessException.builder(ExceptionCode.SECTION_NOT_IN_COURSE)
+                    .withId(section.getId(), expectedCourseId)
+                    .build();
         }
     }
 }

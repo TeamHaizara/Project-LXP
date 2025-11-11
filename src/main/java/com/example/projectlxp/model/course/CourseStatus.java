@@ -2,8 +2,8 @@ package com.example.projectlxp.model.course;
 
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
-
 import com.example.projectlxp.exception.Status;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

@@ -2,6 +2,7 @@ package com.example.projectlxp.repository.course;
 
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
+import com.example.projectlxp.model.section.Section;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,12 +18,17 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.deletedAt IS NULL")
     Optional<Course> findByIdAndNotDeleted(@Param("id") Long id);
 
-    // Soft delete를 고려한 조회 (Section, Lecture fetch join)
+    // Soft delete를 고려한 조회 (Section fetch join only - step 1)
     @Query("SELECT DISTINCT c FROM Course c " +
-            "LEFT JOIN FETCH c.sections s " +
-            "LEFT JOIN FETCH s.lectures " +
+            "LEFT JOIN FETCH c.sections " +
             "WHERE c.id = :id AND c.deletedAt IS NULL")
-    Optional<Course> findByIdWithSectionsAndLectures(@Param("id") Long id);
+    Optional<Course> findByIdWithSections(@Param("id") Long id);
+
+    // Fetch lectures for sections (step 2) - to be called after step 1
+    @Query("SELECT DISTINCT s FROM Section s " +
+            "LEFT JOIN FETCH s.lectures " +
+            "WHERE s.course.id = :courseId AND s.deletedAt IS NULL")
+    List<Section> findSectionsWithLecturesByCourseId(@Param("courseId") Long courseId);
 
     // 삭제되지 않은 모든 코스 조회
     @Query("SELECT c FROM Course c WHERE c.deletedAt IS NULL")
@@ -45,7 +51,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByInstructorIdAndStatusAndNotDeleted(@Param("instructorId") Long instructorId, @Param("status") CourseStatus status);
 
     // 제목으로 검색 (LIKE, 삭제되지 않은 것만)
-    @Query("SELECT c FROM Course c WHERE c.title LIKE %:keyword% AND c.deletedAt IS NULL")
+    @Query("SELECT c FROM Course c WHERE c.title LIKE CONCAT('%', :keyword, '%') AND c.deletedAt IS NULL")
     List<Course> searchByTitleAndNotDeleted(@Param("keyword") String keyword);
 
     // 여러 ID로 코스 조회 (수강 중인 코스 목록용)

@@ -14,8 +14,10 @@ public enum ExceptionCode implements ErrorCode {
     // Section
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: "),
     DUPLICATE_SECTION_ORDER(HttpStatus.CONFLICT, "Duplicate section order: %d"),
+    SECTION_NOT_IN_COURSE(HttpStatus.BAD_REQUEST, "Section %d does not belong to course %d"),
 
     // Lecture
+    LECTURE_NOT_IN_SECTION(HttpStatus.BAD_REQUEST, "Lecture %d does not belong to section %d"),
     
     // Enrolled course
     ALREADY_ENROLLED(HttpStatus.BAD_REQUEST, "Already enrolled"),
