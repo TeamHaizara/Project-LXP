@@ -2,13 +2,13 @@ package com.example.projectlxp.service.cart;
 
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
-import com.example.projectlxp.model.cart.Cart;
+import com.example.projectlxp.model.cart.CartItems;
 import com.example.projectlxp.repository.cart.CartRepository;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
 import com.example.projectlxp.repository.user.UserRepository;
 import com.example.projectlxp.service.cart.dto.CartServiceDto;
-import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,41 +36,46 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
-    public List<Cart> getAllCarts(Long userId) {
-        validateUserReference(userId);
-        return cartRepository.findAllByUserIdAndDeletedAtIsNull(userId);
+    @Transactional(readOnly = true)
+    public CartItems getAllCartItems(Long userId) {
+        return findCartItemsBy(userId);
     }
 
     @Override
     @Transactional
     public void deleteCart(CartServiceDto dto) {
         validateCourseReference(dto.courseId());
-        List<Cart> cartList = getAllCarts(dto.userId());
-        cartList.stream().filter(cart -> cart.getCartCourseId().equals(dto.courseId())).findFirst()
-                .ifPresentOrElse(cart -> {
-                    cart.softDelete();
-                    cartRepository.save(cart);
-                }, () -> {
+        cartRepository.findByUserIdAndCourseIdAndDeletedAtIsNull(dto.userId(), dto.courseId()).ifPresentOrElse(
+                c-> {
+                    c.softDelete();
+                    cartRepository.save(c);
+                },()-> {
                     throw BusinessException.builder(ExceptionCode.CART_NOT_FOUND).build();
-                });
+                }
+        );
     }
 
     @Override
     @Transactional
     public void deleteAllCart(Long userId) {
-        List<Cart> cartList = getAllCarts(userId);
-        cartList.forEach(cart -> {
+        CartItems cartList = findCartItemsBy(userId);
+        cartList.toList().forEach(cart -> {
             validateCourseReference(cart.getCartCourseId());
             cart.softDelete();
-            cartRepository.save(cart);
         });
+        cartRepository.saveAll(cartList.toList());
+    }
+
+    private CartItems findCartItemsBy(Long userId) {
+        validateUserReference(userId);
+        return CartItems.from(cartRepository.findAllByUserIdAndDeletedAtIsNull(userId));
     }
 
     private void validateReferenceIntegrity(Long userId, Long courseId) {
         validateUserReference(userId);
         validateCourseReference(courseId);
         validateAlreadyEnrolled(userId, courseId);
+        validateAlreadyIncludeCart(userId, courseId);
     }
 
     private void validateAlreadyEnrolled(Long userId, Long courseId) {
@@ -88,6 +93,12 @@ public class CartServiceImpl implements CartService {
     private void validateUserReference(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw BusinessException.builder(ExceptionCode.USER_NOT_FOUND).withId(userId).build();
+        }
+    }
+
+    private void validateAlreadyIncludeCart(Long userId,Long courseId) {
+        if(cartRepository.existsByUserIdAndCourseIdAndDeletedAtIsNull(userId,courseId)){
+            throw BusinessException.builder(ExceptionCode.CART_ALREADY_INCLUDE_COURSE).withId(courseId).build();
         }
     }
 }

@@ -28,6 +28,7 @@ public enum ExceptionCode implements ErrorCode {
 
     //Cart
     CART_NOT_FOUND(HttpStatus.NOT_FOUND, "Cart not found with id: %d"),
+    CART_ALREADY_INCLUDE_COURSE(HttpStatus.BAD_REQUEST, "Course id : %d already include cart"),
 
     //User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found with id: %d"),

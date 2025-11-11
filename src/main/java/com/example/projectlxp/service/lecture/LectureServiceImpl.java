@@ -108,7 +108,15 @@ public class LectureServiceImpl implements LectureService {
         // sectionId 일치 검증
         validateLectureBelongsToSection(lecture, sectionId);
 
-        lecture.updateDetails(requestDTO);
+        lecture.updateDetails(
+                requestDTO.getTitle(),
+                requestDTO.getDescription(),
+                requestDTO.getOrder(),
+                requestDTO.getType(),
+                requestDTO.getResourcePath(),
+                requestDTO.getDuration(),
+                requestDTO.getIsPreviewable()
+        );
 
         Lecture updatedLecture = lectureRepository.save(lecture);
         return LectureResponse.from(updatedLecture);

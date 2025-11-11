@@ -2,15 +2,12 @@ package com.example.projectlxp.model.cart;
 
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
-import com.example.projectlxp.model.course.Course;
-import com.example.projectlxp.model.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -30,7 +27,7 @@ public class Cart {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = true)
+    @Column
     private LocalDateTime deletedAt;
 
     protected Cart() {
@@ -39,7 +36,6 @@ public class Cart {
     private Cart(Long userId, Long courseId) {
         validateUserIdIsNull(userId);
         validateCourseIdIsNull(courseId);
-
         this.userId = userId;
         this.courseId = courseId;
     }
@@ -50,20 +46,16 @@ public class Cart {
 
     private void validateCourseIdIsNull(Long courseId) {
         Optional.ofNullable(courseId)
-                .orElseThrow(() ->
-                        BusinessException.builder(ExceptionCode.NOT_NULL_FIELD_IS_NULL)
-                                .withField("courseId")
-                                .build()
-                );
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.NOT_NULL_FIELD_IS_NULL)
+                        .withField("courseId")
+                        .build());
     }
 
     private void validateUserIdIsNull(Long userId) {
         Optional.ofNullable(userId)
-                .orElseThrow(() ->
-                        BusinessException.builder(ExceptionCode.NOT_NULL_FIELD_IS_NULL)
-                                .withField("userId")
-                                .build()
-                );
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.NOT_NULL_FIELD_IS_NULL)
+                        .withField("userId")
+                        .build());
     }
 
     @PrePersist
@@ -89,5 +81,9 @@ public class Cart {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
     }
 }
