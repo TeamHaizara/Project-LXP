@@ -12,8 +12,10 @@ import com.example.projectlxp.service.section.dto.SectionServiceDto;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,16 +76,38 @@ public class SectionServiceImpl implements SectionService {
         Course course = courseRepository.findByIdAndNotDeleted(courseId)
             .orElseThrow(() -> new BusinessException(ExceptionCode.COURSE_NOT_FOUND, courseId));
 
-        List<Section> sections = sectionRepository.findByCourseIdAndNotDeleted(courseId);
-        Map<Long, Section> sectionMap = sections.stream()
+        List<Section> sectionsInDb = sectionRepository.findByCourseIdAndNotDeleted(courseId);
+        Map<Long, Section> sectionMap = sectionsInDb.stream()
             .collect(Collectors.toMap(Section::getId, Function.identity()));
 
+        // --- 검증 로직 시작 ---
+
+        // 1. 요청된 sectionIds의 개수와 DB에 있는 섹션의 개수가 일치하는지 확인
+        if (sectionMap.size() != sectionIds.size()) {
+            throw new BusinessException(ExceptionCode.INVALID_SECTION_REORDER_REQUEST,
+                String.format("The number of sections does not match. Expected: %d, Actual: %d", sectionMap.size(), sectionIds.size()));
+        }
+
+        // 2. 요청된 sectionIds에 중복이 있는지, 그리고 DB에 있는 모든 섹션 ID를 포함하는지 확인
+        Set<Long> dbSectionIds = sectionMap.keySet();
+        Set<Long> requestSectionIds = new HashSet<>(sectionIds);
+
+        if (requestSectionIds.size() != sectionIds.size()) {
+            throw new BusinessException(ExceptionCode.INVALID_SECTION_REORDER_REQUEST, "Duplicate section IDs are not allowed.");
+        }
+
+        if (!dbSectionIds.equals(requestSectionIds)) {
+            throw new BusinessException(ExceptionCode.INVALID_SECTION_REORDER_REQUEST, "The provided section IDs do not match the sections in the course.");
+        }
+
+        // --- 검증 로직 끝 ---
+
+        // 순서 업데이트 로직
         for (int i = 0; i < sectionIds.size(); i++) {
             Long sectionId = sectionIds.get(i);
             Section section = sectionMap.get(sectionId);
-            if (section != null) {
-                section.update(section.getTitle(), i + 1);
-            }
+            // 위에서 모든 ID가 유효함을 검증했으므로 section은 항상 존재함
+            section.update(section.getTitle(), i + 1);
         }
     }
 }
