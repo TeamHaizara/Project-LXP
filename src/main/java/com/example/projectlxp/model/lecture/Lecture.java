@@ -1,9 +1,10 @@
 package com.example.projectlxp.model.lecture;
 
-import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
+import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.LECTURE_ALREADY_DELETED;
@@ -11,7 +12,6 @@ import static com.example.projectlxp.model.lecture.exception.LectureExceptionCod
 
 
 @Entity
-@Table(name = "lectures")
 public class Lecture {
 
     @Id
@@ -22,38 +22,38 @@ public class Lecture {
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "sort_order", nullable = false)
+    @Column(nullable = false)
     private Integer sortOrder;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LectureType type;
 
-    @Column(name = "resource_path", nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String resourcePath;
 
     @Column
     private Integer duration;
 
-    @Column(name = "previewable", nullable = false)
-    private Boolean previewable = false;
+    @Column(nullable = false)
+    private boolean previewable = false;
 
     @Column(nullable = false)
     private boolean status = false;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "deleted_at")
+    @Column
     private LocalDateTime deletedAt;
 
     @PrePersist
@@ -82,7 +82,7 @@ public class Lecture {
         this.previewable = previewable;
     }
 
-    public static Lecture forCreate(Section section, String title, String description, Integer order, LectureType type,String resourcePath, Integer duration, Boolean isPreviewable) {
+    public static Lecture forCreate(Section section, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
 
         return new Lecture(section, title, description, order, type, resourcePath, duration, isPreviewable);
     }
@@ -102,7 +102,7 @@ public class Lecture {
         if (requestDTO.getDescription() != null) {
             this.description = requestDTO.getDescription();
         }
-        if(requestDTO.getOrder() != null) {
+        if (requestDTO.getOrder() != null) {
             updateOrder(requestDTO.getOrder());
         }
         if (requestDTO.getType() != null) {
