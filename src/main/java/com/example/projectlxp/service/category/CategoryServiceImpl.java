@@ -3,8 +3,8 @@ package com.example.projectlxp.service.category;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.category.Category;
-import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.category.CategoryRepository;
+import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.service.category.dto.CategoryServiceDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +28,13 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryServiceDto createCategory(CategoryServiceDto dto) {
         // 카테고리 이름 중복 검사
         if (categoryRepository.existsByName(dto.name())) {
-            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME).withField(dto.name()).build();
+            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME)
+                .withField(dto.name())
+                .build();
         }
 
         // DTO에서 toEntity 메소드를 사용하여 엔티티 생성
-        Category category = dto.toEntity();
-        Category savedCategory = categoryRepository.save(category);
+        Category savedCategory = categoryRepository.save(dto.toEntity());
 
         return new CategoryServiceDto(savedCategory.getId(), savedCategory.getName());
     }

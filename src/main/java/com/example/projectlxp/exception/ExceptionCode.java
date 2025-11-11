@@ -19,7 +19,9 @@ public enum ExceptionCode implements ErrorCode {
 
     // Category
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "Category not found with id: %d"),
+    // TODO:
     DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "Duplicate category name: %s"),
+    CATEGORY_HAS_COURSES(HttpStatus.UNPROCESSABLE_ENTITY, "Cannot delete category with id %d because it has associated courses."),
 
     // Lecture
     LECTURE_NOT_IN_SECTION(HttpStatus.BAD_REQUEST, "Lecture %d does not belong to section %d"),

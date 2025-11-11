@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping("/api/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -31,14 +31,23 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+        // TODO <List<CategoryResponse>> 처럼 리스트의 형태로 반환하는것보다 개별 DTO를 반환하는게 더 좋음
         // Service 계층을 호출하여 CategoryServiceDto 리스트를 받음
         List<CategoryServiceDto> categoryDtos = categoryService.getAllCategories();
         // CategoryServiceDto 리스트를 CategoryResponse 리스트로 변환
         List<CategoryResponse> responses = categoryDtos.stream()
-                .map(CategoryResponse::from)
-                .collect(Collectors.toList());
+            .map(CategoryResponse::from)
+            .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
+        // TODO
+        return null;
+    }
+
+    // update??
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
