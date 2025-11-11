@@ -17,6 +17,11 @@ public enum ExceptionCode implements ErrorCode {
     INVALID_SECTION_REORDER_REQUEST(HttpStatus.BAD_REQUEST, "Invalid section reorder request: %s"),
     SECTION_NOT_IN_COURSE(HttpStatus.BAD_REQUEST, "Section %d does not belong to course %d"),
 
+    // Category
+
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "Category not found with id: %d"),
+
+    DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "Duplicate category name: %s"),
     // Lecture
     LECTURE_NOT_IN_SECTION(HttpStatus.BAD_REQUEST, "Lecture %d does not belong to section %d"),
 
