@@ -25,10 +25,16 @@ public enum ExceptionCode implements ErrorCode {
 
     // Common
     NOT_NULL_FIELD_IS_NULL(HttpStatus.BAD_REQUEST, "Not null field is null."),
-    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "Payment failed. try again later"),
+
+    //Cart
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "Cart not found with id: %d"),
 
     //User
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found with id: %d");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found with id: %d"),
+
+    //Payment
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "Payment failed. try again later"),
+    ;
 
     private final HttpStatus status;
     private final String message;
