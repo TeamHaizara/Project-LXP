@@ -1,5 +1,6 @@
 package com.example.projectlxp.model.lecture;
 
+import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.model.section.Section;
