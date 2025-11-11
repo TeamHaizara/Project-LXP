@@ -1,10 +1,8 @@
 package com.example.projectlxp.model.cart;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 public final class CartItems {
 
