@@ -12,14 +12,14 @@ public enum ExceptionCode implements ErrorCode {
     INVALID_COURSE_STATUS(HttpStatus.BAD_REQUEST, "Invalid course status: %s"),
 
     // Section
-    SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: "),
+    SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: %d"),
     DUPLICATE_SECTION_ORDER(HttpStatus.CONFLICT, "Duplicate section order: %d"),
     INVALID_SECTION_REORDER_REQUEST(HttpStatus.BAD_REQUEST, "Invalid section reorder request: %s"),
     SECTION_NOT_IN_COURSE(HttpStatus.BAD_REQUEST, "Section %d does not belong to course %d"),
 
     // Lecture
     LECTURE_NOT_IN_SECTION(HttpStatus.BAD_REQUEST, "Lecture %d does not belong to section %d"),
-    
+
     // Enrolled course
     ALREADY_ENROLLED(HttpStatus.BAD_REQUEST, "Already enrolled"),
 
