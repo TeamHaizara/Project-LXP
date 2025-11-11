@@ -2,9 +2,9 @@ package com.example.projectlxp.service.section;
 
 import com.example.projectlxp.controller.section.response.SectionResponse;
 import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.section.Section;
-import com.example.projectlxp.model.section.exception.SectionNotFoundException;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.section.dto.SectionServiceDto;
@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,9 +106,8 @@ class SectionServiceImplTest {
             Section existingSection = Section.create(course, "원본 섹션", 1);
 
             given(sectionRepository.findByIdAndDeletedAtIsNull(sectionId)).willReturn(Optional.of(existingSection));
-
             // when
-            SectionResponse response = sectionService.updateSection(sectionId, dto);
+            SectionResponse response = sectionService.updateSection(courseId, sectionId, dto);
 
             // then
             assertThat(response.title()).isEqualTo("수정된 섹션");
@@ -123,12 +123,31 @@ class SectionServiceImplTest {
             given(sectionRepository.findByIdAndDeletedAtIsNull(invalidSectionId)).willReturn(Optional.empty());
 
             // when
-            SectionNotFoundException exception = assertThrows(SectionNotFoundException.class,
-                    () -> sectionService.updateSection(invalidSectionId, dto));
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> sectionService.updateSection(courseId, invalidSectionId, dto));
 
             // then
             assertThat(exception.getMessage()).isEqualTo("Section not found with id: " + invalidSectionId);
         }
+
+        @Test
+        @DisplayName("실패 - 다른 코스 ID로 요청 시 예외 발생")
+        void should_throwException_when_courseIdDoesNotMatch() {
+            // given
+            SectionServiceDto dto = new SectionServiceDto(null, "수정된 섹션", 2);
+            Section existingSection = Section.create(course, "원본 섹션", 1);
+            Long otherCourseId = 2L;
+
+            given(sectionRepository.findByIdAndDeletedAtIsNull(sectionId)).willReturn(Optional.of(existingSection));
+
+            // when / then
+            BusinessException exception = assertThrows(BusinessException.class,
+                () -> sectionService.updateSection(otherCourseId, sectionId, dto));
+
+            assertThat(exception.getMessage()).contains("does not belong to course");
+            verify(sectionRepository).findByIdAndDeletedAtIsNull(sectionId);
+        }
+
     }
 
     @Nested
@@ -145,7 +164,7 @@ class SectionServiceImplTest {
             given(sectionRepository.findByIdAndDeletedAtIsNull(sectionId)).willReturn(Optional.of(existingSection));
 
             // when
-            sectionService.deleteSection(sectionId);
+            sectionService.deleteSection(courseId, sectionId);
 
             // then
             assertThat(existingSection.isDeleted()).isTrue();
@@ -159,11 +178,27 @@ class SectionServiceImplTest {
             given(sectionRepository.findByIdAndDeletedAtIsNull(invalidSectionId)).willReturn(Optional.empty());
 
             // when
-            SectionNotFoundException exception = assertThrows(SectionNotFoundException.class,
-                    () -> sectionService.deleteSection(invalidSectionId));
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> sectionService.deleteSection(courseId, invalidSectionId));
 
             // then
             assertThat(exception.getMessage()).isEqualTo("Section not found with id: " + invalidSectionId);
+        }
+
+        @Test
+        @DisplayName("실패 - 다른 코스 ID로 요청 시 예외 발생")
+        void should_throwException_when_courseIdDoesNotMatch() {
+            // given
+            Section existingSection = Section.create(course, "삭제될 섹션", 1);
+            Long otherCourseId = 2L;
+            given(sectionRepository.findByIdAndDeletedAtIsNull(sectionId)).willReturn(Optional.of(existingSection));
+
+            // when / then
+            BusinessException exception = assertThrows(BusinessException.class,
+                () -> sectionService.deleteSection(otherCourseId, sectionId));
+
+            assertThat(exception.getMessage()).contains("does not belong to course");
+            verify(sectionRepository).findByIdAndDeletedAtIsNull(sectionId);
         }
     }
 
@@ -206,6 +241,44 @@ class SectionServiceImplTest {
 
             // then
             assertThat(exception.getMessage()).isEqualTo("Course not found with id: " + invalidCourseId);
+        }
+
+        @Test
+        @DisplayName("실패 - 요청된 ID 개수와 DB의 섹션 개수가 다를 때 예외 발생")
+        void should_throwException_when_idCountMismatch() {
+            // given
+            Section section1 = Section.create(course, "섹션 1", 1);
+            ReflectionTestUtils.setField(section1, "id", 1L);
+            List<Long> reorderedIds = List.of(1L); // 요청은 1개
+
+            given(courseRepository.findByIdAndNotDeleted(courseId)).willReturn(Optional.of(course));
+            given(sectionRepository.findByCourseIdAndNotDeleted(courseId)).willReturn(List.of(section1, Section.create(course, "섹션 2", 2))); // DB에는 2개
+
+            // when / then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> sectionService.reorderSections(courseId, reorderedIds));
+
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.INVALID_SECTION_REORDER_REQUEST.getStatus());
+            assertThat(exception.getMessage()).contains("The number of sections does not match");
+        }
+
+        @Test
+        @DisplayName("실패 - 요청된 ID 목록이 DB의 ID 목록과 다를 때 예외 발생")
+        void should_throwException_when_idSetMismatch() {
+            // given
+            Section section1 = Section.create(course, "섹션 1", 1);
+            ReflectionTestUtils.setField(section1, "id", 1L);
+            List<Long> reorderedIds = List.of(99L); // DB에 없는 ID
+
+            given(courseRepository.findByIdAndNotDeleted(courseId)).willReturn(Optional.of(course));
+            given(sectionRepository.findByCourseIdAndNotDeleted(courseId)).willReturn(List.of(section1));
+
+            // when / then
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> sectionService.reorderSections(courseId, reorderedIds));
+
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.INVALID_SECTION_REORDER_REQUEST.getStatus());
+            assertThat(exception.getMessage()).contains("The provided section IDs do not match");
         }
     }
 }
