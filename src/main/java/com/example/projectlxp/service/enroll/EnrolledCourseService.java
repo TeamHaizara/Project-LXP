@@ -42,8 +42,6 @@ public class EnrolledCourseService {
 
         Course course = getCourseBy(dto.courseId());
 
-        enrolledCourseRepository.save(dto.toEntity());
-
         paymentService.pay(
             new PaymentDto(
                 dto.userId(),
@@ -52,6 +50,8 @@ public class EnrolledCourseService {
                 dto.paymentMethod()
             )
         );
+
+        enrolledCourseRepository.save(dto.toEntity());
     }
 
     public List<Course> getEnrolledCourses(Long userId) {
