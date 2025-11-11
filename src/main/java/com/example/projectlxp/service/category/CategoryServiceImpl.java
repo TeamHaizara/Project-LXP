@@ -1,0 +1,64 @@
+package com.example.projectlxp.service.category;
+
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.exception.ExceptionCode;
+import com.example.projectlxp.model.category.Category;
+import com.example.projectlxp.repository.course.CourseRepository;
+import com.example.projectlxp.repository.category.CategoryRepository;
+import com.example.projectlxp.service.category.dto.CategoryServiceDto;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class CategoryServiceImpl implements CategoryService {
+
+    private final CategoryRepository categoryRepository;
+    private final CourseRepository courseRepository;
+
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CourseRepository courseRepository) {
+        this.categoryRepository = categoryRepository;
+        this.courseRepository = courseRepository;
+    }
+
+    @Override
+    @Transactional
+    public CategoryServiceDto createCategory(CategoryServiceDto dto) {
+        // 카테고리 이름 중복 검사
+        if (categoryRepository.existsByName(dto.name())) {
+            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME).withField(dto.name()).build();
+        }
+
+        // DTO에서 toEntity 메소드를 사용하여 엔티티 생성
+        Category category = dto.toEntity();
+        Category savedCategory = categoryRepository.save(category);
+
+        return new CategoryServiceDto(savedCategory.getId(), savedCategory.getName());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryServiceDto> getAllCategories() {
+        return categoryRepository.findAll().stream()
+            .map(category -> new CategoryServiceDto(category.getId(), category.getName()))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long categoryId) {
+        // 해당 카테고리에 속한 강좌가 있는지 확인
+        if (!courseRepository.findByCategoryIdAndNotDeleted(categoryId).isEmpty()) {
+            throw BusinessException.builder(ExceptionCode.CATEGORY_HAS_COURSES)
+                .withId(categoryId)
+                .build();
+        }
+
+        Category category = categoryRepository.findById(categoryId)
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(categoryId).build());
+
+        categoryRepository.delete(category);
+    }
+}
