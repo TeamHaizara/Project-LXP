@@ -28,10 +28,10 @@ public interface LectureService {
     LectureListResponse getLecturesByCourse(Long courseId);
 
     // 렉처 수정
-    LectureResponse updateLecture(Long id, LectureUpdateRequest requestDTO);
+    LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO);
 
     // 렉처 삭제 (Soft Delete)
-    void deleteLecture(Long id);
+    void deleteLecture(Long sectionId, Long lectureId);
 
     // 렉처 순서 변경
     void reorderLectures(Long sectionId, List<Long> lectureIds);

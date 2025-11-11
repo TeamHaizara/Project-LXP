@@ -8,9 +8,9 @@ import java.util.List;
 public interface SectionService {
     SectionResponse createSection(SectionServiceDto sectionServiceDto);
 
-    SectionResponse updateSection(Long sectionId, SectionServiceDto sectionServiceDto);
+    SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto sectionServiceDto);
 
-    void deleteSection(Long sectionId);
+    void deleteSection(Long courseId, Long sectionId);
 
     void reorderSections(Long courseId, List<Long> sectionIds);
 }

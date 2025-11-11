@@ -1,8 +1,8 @@
 package com.example.projectlxp.controller.course.response;
 
+import com.example.projectlxp.controller.section.response.SectionDetailResponse;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.course.CourseStatus;
-import com.example.projectlxp.service.section.dto.SectionResponseDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,14 +18,14 @@ public record CourseDetailResponse(
         CourseStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        List<SectionResponseDTO> sections
+        List<SectionDetailResponse> sections
 ) {
 
     // Factory method
     public static CourseDetailResponse from(Course course) {
-        List<SectionResponseDTO> sections = course.getSections().stream()
+        List<SectionDetailResponse> sections = course.getSections().stream()
                 .filter(section -> !section.isDeleted())
-                .map(SectionResponseDTO::from)
+                .map(SectionDetailResponse::from)
                 .collect(Collectors.toList());
 
         return new CourseDetailResponse(
@@ -41,5 +41,5 @@ public record CourseDetailResponse(
                 sections
         );
     }
-    
+
 }

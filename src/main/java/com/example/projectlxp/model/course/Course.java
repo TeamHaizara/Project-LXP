@@ -69,7 +69,7 @@ public class Course {
         this.categoryId = categoryId;
         this.title = title;
         this.description = description;
-        this.price = price != null ? price : 0;
+        this.price = price;
     }
 
     public boolean isDeleted() {
