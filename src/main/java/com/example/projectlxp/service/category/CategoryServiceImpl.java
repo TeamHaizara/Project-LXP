@@ -48,6 +48,32 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public CategoryServiceDto getCategoryById(Long id) {
+        Category category = categoryRepository.findById(id)
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(id).build());
+        return new CategoryServiceDto(category.getId(), category.getName());
+    }
+
+    @Override
+    @Transactional
+    public CategoryServiceDto updateCategory(Long id, CategoryServiceDto dto) {
+        Category category = categoryRepository.findById(id)
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(id).build());
+
+        // 이름이 변경되었고, 변경된 이름이 이미 존재하면 예외 발생
+        if (!category.getName().equals(dto.name()) && categoryRepository.existsByName(dto.name())) {
+            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME)
+                .withField(dto.name())
+                .build();
+        }
+
+        category.update(dto.name());
+        // 변경 감지(Dirty Checking)에 의해 트랜잭션 종료 시 자동으로 update 쿼리가 실행됩니다.
+        return new CategoryServiceDto(category.getId(), category.getName());
+    }
+
+    @Override
     @Transactional
     public void deleteCategory(Long categoryId) {
         // 해당 카테고리에 속한 강좌가 있는지 확인

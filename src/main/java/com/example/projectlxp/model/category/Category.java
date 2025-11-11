@@ -26,6 +26,11 @@ public class Category {
         return new Category(name);
     }
 
+    // 엔티티의 상태를 변경하는 비즈니스 메소드
+    public void update(String name) {
+        this.name = name;
+    }
+
     public Long getId() {
         return id;
     }

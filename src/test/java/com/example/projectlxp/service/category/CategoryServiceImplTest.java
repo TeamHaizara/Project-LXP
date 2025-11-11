@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -113,6 +114,123 @@ class CategoryServiceImplTest {
             // then
             assertThat(result).isEmpty();
             verify(categoryRepository).findAll();
+        }
+    }
+
+    @Nested
+    @DisplayName("ID로 카테고리 조회")
+    class GetCategoryById {
+
+        private final Long categoryId = 1L;
+        private final Long invalidCategoryId = 99L;
+
+        @Test
+        @DisplayName("성공")
+        void should_returnCategory_when_idExists() {
+            // given
+            Category category = Category.create("Java");
+            given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
+
+            // when
+            CategoryServiceDto result = categoryService.getCategoryById(categoryId);
+
+            // then
+            assertThat(result.name()).isEqualTo("Java");
+            verify(categoryRepository).findById(categoryId);
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 ID로 조회 시 예외 발생")
+        void should_throwException_when_idDoesNotExist() {
+            // given
+            given(categoryRepository.findById(invalidCategoryId)).willReturn(Optional.empty());
+
+            // when
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> categoryService.getCategoryById(invalidCategoryId));
+
+            // then
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_NOT_FOUND.getStatus());
+            assertThat(exception.getMessage()).isEqualTo("Category not found with id: " + invalidCategoryId);
+        }
+    }
+
+    @Nested
+    @DisplayName("카테고리 수정")
+    class UpdateCategory {
+
+        private final Long categoryId = 1L;
+        private final Long invalidCategoryId = 99L;
+
+        @Test
+        @DisplayName("성공")
+        void should_updateCategory_when_validRequest() {
+            // given
+            Category existingCategory = Category.create("원본 이름");
+            CategoryServiceDto dto = new CategoryServiceDto(null, "수정된 이름");
+
+            given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
+            given(categoryRepository.existsByName("수정된 이름")).willReturn(false);
+
+            // when
+            CategoryServiceDto result = categoryService.updateCategory(categoryId, dto);
+
+            // then
+            assertThat(result.name()).isEqualTo("수정된 이름");
+            assertThat(existingCategory.getName()).isEqualTo("수정된 이름"); // 엔티티 상태 변경 검증
+            verify(categoryRepository).findById(categoryId);
+            verify(categoryRepository).existsByName("수정된 이름");
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 ID로 수정 요청 시 예외 발생")
+        void should_throwException_when_updatingNonExistentCategory() {
+            // given
+            CategoryServiceDto dto = new CategoryServiceDto(null, "수정된 이름");
+            given(categoryRepository.findById(invalidCategoryId)).willReturn(Optional.empty());
+
+            // when
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> categoryService.updateCategory(invalidCategoryId, dto));
+
+            // then
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_NOT_FOUND.getStatus());
+        }
+
+        @Test
+        @DisplayName("실패 - 변경하려는 이름이 이미 존재할 경우 예외 발생")
+        void should_throwException_when_updatedNameIsDuplicated() {
+            // given
+            Category existingCategory = Category.create("원본 이름");
+            CategoryServiceDto dto = new CategoryServiceDto(null, "이미 있는 이름");
+
+            given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
+            given(categoryRepository.existsByName("이미 있는 이름")).willReturn(true);
+
+            // when
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> categoryService.updateCategory(categoryId, dto));
+
+            // then
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.DUPLICATE_CATEGORY_NAME.getStatus());
+            assertThat(exception.getMessage()).isEqualTo("Duplicate category name: " + dto.name());
+        }
+
+        @Test
+        @DisplayName("성공 - 이름을 변경하지 않을 경우 중복 검사를 수행하지 않음")
+        void should_notCheckDuplicate_when_nameIsNotChanged() {
+            // given
+            Category existingCategory = Category.create("같은 이름");
+            CategoryServiceDto dto = new CategoryServiceDto(null, "같은 이름");
+
+            given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
+
+            // when
+            categoryService.updateCategory(categoryId, dto);
+
+            // then
+            // existsByName이 호출되지 않았음을 검증
+            verify(categoryRepository, never()).existsByName(anyString());
         }
     }
 
