@@ -3,12 +3,13 @@ package com.example.projectlxp.service.section;
 import com.example.projectlxp.controller.section.response.SectionResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
+import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.section.Section;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.section.dto.SectionServiceDto;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,19 +31,20 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public SectionResponse createSection(SectionServiceDto dto) {
-        var course = courseRepository.findByIdAndNotDeleted(dto.courseId())
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
-                .withId(dto.courseId())
-                .build());
+        Course course = courseRepository.findByIdAndNotDeleted(dto.courseId())
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(dto.courseId())
+                        .build());
 
         // 섹션 순서(order) 중복 검증
         if (sectionRepository.existsByCourseIdAndOrderAndDeletedAtIsNull(dto.courseId(), dto.order())) {
             throw BusinessException.builder(ExceptionCode.DUPLICATE_SECTION_ORDER)
-                .withId(Long.valueOf(dto.order()))
-                .build();
+                    .withId(Long.valueOf(dto.order()))
+                    .build();
         }
 
-        Section section = Section.create(course, dto.title(), dto.order());
+        // Section.create() 직접 호출 대신, dto.toEntity()를 사용하도록 변경
+        Section section = dto.toEntity(course);
 
         return SectionResponse.from(sectionRepository.save(section));
     }
@@ -51,9 +53,9 @@ public class SectionServiceImpl implements SectionService {
     @Transactional
     public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
-                .withId(sectionId)
-                .build());
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build());
 
         // courseId 일치 검증
         validateSectionBelongsToCourse(section, courseId);
@@ -62,8 +64,8 @@ public class SectionServiceImpl implements SectionService {
         if (!section.getOrder().equals(dto.order())) {
             if (sectionRepository.existsByCourseIdAndOrderAndDeletedAtIsNull(section.getCourse().getId(), dto.order())) {
                 throw BusinessException.builder(ExceptionCode.DUPLICATE_SECTION_ORDER)
-                    .withId(Long.valueOf(dto.order()))
-                    .build();
+                        .withId(Long.valueOf(dto.order()))
+                        .build();
             }
         }
 
@@ -75,9 +77,9 @@ public class SectionServiceImpl implements SectionService {
     @Transactional
     public void deleteSection(Long courseId, Long sectionId) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
-                .withId(sectionId)
-                .build());
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build());
 
         // courseId 일치 검증
         validateSectionBelongsToCourse(section, courseId);
@@ -89,21 +91,21 @@ public class SectionServiceImpl implements SectionService {
     @Transactional
     public void reorderSections(Long courseId, List<Long> sectionIds) {
         courseRepository.findByIdAndNotDeleted(courseId)
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
-                .withId(courseId)
-                .build());
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
+                        .withId(courseId)
+                        .build());
 
         List<Section> sectionsInDb = sectionRepository.findByCourseIdAndNotDeleted(courseId);
         Map<Long, Section> sectionMap = sectionsInDb.stream()
-            .collect(Collectors.toMap(Section::getId, Function.identity()));
+                .collect(Collectors.toMap(Section::getId, Function.identity()));
 
         // --- 검증 로직 시작 ---
 
         // 1. 요청된 sectionIds의 개수와 DB에 있는 섹션의 개수가 일치하는지 확인
         if (sectionMap.size() != sectionIds.size()) {
             throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                .withField(String.format("The number of sections does not match. Expected: %d, Actual: %d", sectionMap.size(), sectionIds.size()))
-                .build();
+                    .withField(String.format("The number of sections does not match. Expected: %d, Actual: %d", sectionMap.size(), sectionIds.size()))
+                    .build();
         }
 
         // 2. 요청된 sectionIds에 중복이 있는지, 그리고 DB에 있는 모든 섹션 ID를 포함하는지 확인
@@ -112,14 +114,14 @@ public class SectionServiceImpl implements SectionService {
 
         if (requestSectionIds.size() != sectionIds.size()) {
             throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                .withField("Duplicate section IDs are not allowed.")
-                .build();
+                    .withField("Duplicate section IDs are not allowed.")
+                    .build();
         }
 
         if (!dbSectionIds.equals(requestSectionIds)) {
             throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                .withField("The provided section IDs do not match the sections in the course.")
-                .build();
+                    .withField("The provided section IDs do not match the sections in the course.")
+                    .build();
         }
 
         // --- 검증 로직 끝 ---
