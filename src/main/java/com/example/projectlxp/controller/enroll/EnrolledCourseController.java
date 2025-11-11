@@ -3,6 +3,7 @@ package com.example.projectlxp.controller.enroll;
 import com.example.projectlxp.controller.enroll.request.EnrollCourseRequest;
 import com.example.projectlxp.controller.enroll.response.EnrolledCoursesResponse;
 import com.example.projectlxp.service.enroll.EnrolledCourseService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,7 @@ public class EnrolledCourseController {
     }
 
     @PostMapping("/api/learner/enroll")
-    public ResponseEntity<Void> enroll(@RequestBody EnrollCourseRequest request, Long userId) {
+    public ResponseEntity<Void> enroll(@Valid @RequestBody EnrollCourseRequest request, Long userId) {
         enrolledCourseService.enroll(request.toDto(userId));
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
