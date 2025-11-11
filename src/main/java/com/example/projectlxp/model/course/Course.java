@@ -10,20 +10,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "courses")
 public class Course {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "instructor_id", nullable = false)
+    @Column(nullable = false)
     private Long instructorId;
 
-    @Column(name = "category_id", nullable = false)
+    @Column(nullable = false)
     private Long categoryId;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String title;
 
     @Lob
@@ -37,13 +36,13 @@ public class Course {
     @Column(nullable = false)
     private CourseStatus status = CourseStatus.DRAFT;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "deleted_at")
+    @Column
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -103,6 +102,7 @@ public class Course {
     /**
      * Performs a soft delete on this course and cascades the deletion to all associated sections and lectures.
      * <p>
+     * 선요약: {@code @Transactional} 내에서만 호출하세요 안그럼 터짐
      * This method sets the {@code deletedAt} timestamp for the course, all its sections, and all lectures
      * within those sections. The course status is transitioned to {@code DELETED}.
      * <p>
