@@ -53,8 +53,8 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto, Long userId) {
-        Section section = findSectionWithCourse(sectionId);
-        validateInstructorAccess(section, courseId, userId);
+        Section section = findSectionWithCourse(sectionId); // FETCH JOINED
+        validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         // 섹션 순서(order)를 변경하는 경우에만 중복 검증
@@ -73,8 +73,8 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public void deleteSection(Long courseId, Long sectionId, Long userId) {
-        Section section = findSectionWithCourse(sectionId);
-        validateInstructorAccess(section, courseId, userId);
+        Section section = findSectionWithCourse(sectionId); // FETCH JOINED
+        validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         section.cascadeSoftDelete();
@@ -83,15 +83,16 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public void reorderSections(Long courseId, List<Long> sectionIds, Long userId) {
-        courseRepository.findByIdAndNotDeleted(courseId)
+        Course course = courseRepository.findByIdWithSectionsForManage(courseId) // FETCH JOINED
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(courseId)
                         .build());
 
-        List<Section> sectionsInDb = sectionRepository.findByCourseIdAndNotDeleted(courseId);
+        validateInstructorAccess(course, userId);
+
+        List<Section> sectionsInDb = course.getSections();
         Map<Long, Section> sectionMap = sectionsInDb.stream()
                 .collect(Collectors.toMap(Section::getId, Function.identity()));
-
         Set<Long> dbSectionIds = sectionMap.keySet();
         Set<Long> requestSectionIds = new HashSet<>(sectionIds);
 
@@ -114,13 +115,17 @@ public class SectionServiceImpl implements SectionService {
                         .build());
     }
 
-    private void validateInstructorAccess(Section section, Long courseId, Long userId) {
-        Course course = section.getCourse();
+    private void validateInstructorAccess(Course course, Long userId) {
         if (!course.isOwnedBy(userId)) {
             throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
-                    .withId(userId, courseId)
+                    .withId(userId, course.getId())
                     .build();
         }
+    }
+
+    private void validateInstructorAccess(Section section, Long userId) {
+        Course course = section.getCourse();
+        validateInstructorAccess(course, userId);
     }
 
     private void validateSectionBelongsToCourse(Section section, Long expectedCourseId) {

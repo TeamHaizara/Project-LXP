@@ -113,7 +113,7 @@ public class LectureServiceImpl implements LectureService {
     @Transactional
     public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO, Long userId) {
         Lecture lecture = findLectureWithRelations(lectureId);
-        validateInstructorAccess(lecture, courseId, userId);
+        validateInstructorAccess(lecture, userId);
         validateLectureHierarchy(lecture, courseId, sectionId);
 
         lecture.updateDetails(requestDTO);
@@ -127,7 +127,7 @@ public class LectureServiceImpl implements LectureService {
     @Transactional
     public void deleteLecture(Long courseId, Long sectionId, Long lectureId, Long userId) {
         Lecture lecture = findLectureWithRelations(lectureId);
-        validateInstructorAccess(lecture, courseId, userId);
+        validateInstructorAccess(lecture, userId);
         validateLectureHierarchy(lecture, courseId, sectionId);
 
         lecture.softDelete();
@@ -138,12 +138,14 @@ public class LectureServiceImpl implements LectureService {
     @Override
     @Transactional
     public void reorderLectures(Long courseId, Long sectionId, List<Long> lectureIds, Long userId) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
+        Section section = sectionRepository.findByIdWithCourseAndLectures(sectionId) // FETCH JOIN
+                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build());
 
+        validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
-
-        List<Lecture> lecturesInDb = lectureRepository.findBySectionIdAsc(sectionId);
+        List<Lecture> lecturesInDb = section.getLectures();
         Map<Long, Lecture> lectureMap = lecturesInDb.stream()
                 .collect(Collectors.toMap(Lecture::getId, Function.identity()));
 
@@ -163,19 +165,28 @@ public class LectureServiceImpl implements LectureService {
     }
 
     private Lecture findLectureWithRelations(Long lectureId) {
-        return lectureRepository.findByIdWithSectionAndCourse(lectureId)
+        return lectureRepository.findByIdWithSectionAndCourse(lectureId) // FETCH JOIN
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND)
                         .withId(lectureId)
                         .build());
     }
 
-    private void validateInstructorAccess(Lecture lecture, Long courseId, Long userId) {
-        Course course = lecture.getSection().getCourse();
+    private void validateInstructorAccess(Course course, Long userId) {
         if (!course.isOwnedBy(userId)) {
             throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
-                    .withId(userId, courseId)
+                    .withId(userId, course.getId())
                     .build();
         }
+    }
+
+    private void validateInstructorAccess(Section section, Long userId) {
+        Course course = section.getCourse();
+        validateInstructorAccess(course, userId);
+    }
+
+    private void validateInstructorAccess(Lecture lecture, Long userId) {
+        Course course = lecture.getSection().getCourse();
+        validateInstructorAccess(course, userId);
     }
 
     private void validateLectureHierarchy(Lecture lecture, Long courseId, Long sectionId) {

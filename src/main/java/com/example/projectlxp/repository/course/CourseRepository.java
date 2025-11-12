@@ -19,11 +19,17 @@ public interface CourseRepository extends JpaRepository<Course, Long>, CourseRep
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status != 'DELETED'")
     Optional<Course> findByIdAndNotDeleted(@Param("id") Long id);
 
-    // Course + Section 조회 (fetch join step 1)
+    // Course + Section 조회 (fetch join step 1 - 조회용)
     @Query("SELECT DISTINCT c FROM Course c " +
             "LEFT JOIN FETCH c.sections " +
             "WHERE c.id = :id AND c.status = 'PUBLISHED'")
     Optional<Course> findByIdWithSections(@Param("id") Long id);
+
+    // Course + Section 조회 (관리용 - FETCH JOIN)
+    @Query("SELECT DISTINCT c FROM Course c " +
+            "JOIN FETCH c.sections s " +
+            "WHERE c.id = :id AND c.status != 'DELETED' AND s.deletedAt IS NULL")
+    Optional<Course> findByIdWithSectionsForManage(@Param("id") Long id);
 
     // Section + Lecture 조회 (fetch join step 2)
     @Query("SELECT DISTINCT s FROM Section s " +
@@ -51,8 +57,6 @@ public interface CourseRepository extends JpaRepository<Course, Long>, CourseRep
     @Query("SELECT c FROM Course c WHERE c.id IN :ids AND c.status = 'PUBLISHED' OR c.status = 'ARCHIVED'")
     List<Course> findByIdsAndPublished(@Param("ids") List<Long> ids);
 
-    // ----------
-
     // 특정 상태의 코스 조회
     @Query("SELECT c FROM Course c WHERE c.status = :status")
     List<Course> findByStatus(@Param("status") CourseStatus status);
@@ -60,8 +64,6 @@ public interface CourseRepository extends JpaRepository<Course, Long>, CourseRep
     // 강사별 전체 코스 조회 (관리용: include DRAFT, ARCHIVED)
     @Query("SELECT c FROM Course c WHERE c.instructorId = :instructorId AND c.status != 'DELETED'")
     List<Course> findByInstructorIdAndNotDeleted(@Param("instructorId") Long instructorId);
-
-    // ----------
 
     // 스케줄러용 물리삭제 대상 조회
     List<Course> findByStatusAndDeletedAtBefore(CourseStatus status, LocalDateTime threshold);

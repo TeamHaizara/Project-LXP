@@ -15,6 +15,13 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
     @Query("SELECT s FROM Section s JOIN FETCH s.course WHERE s.id = :sectionId AND s.deletedAt IS NULL")
     Optional<Section> findByIdWithCourse(@Param("sectionId") Long sectionId);
 
+    // Section + Course + Lectures 조회 (관리용 - FETCH JOIN)
+    @Query("SELECT DISTINCT s FROM Section s " +
+           "JOIN FETCH s.course c " +
+           "JOIN FETCH s.lectures l " +
+           "WHERE s.id = :sectionId AND s.deletedAt IS NULL AND l.deletedAt IS NULL")
+    Optional<Section> findByIdWithCourseAndLectures(@Param("sectionId") Long sectionId);
+
     @Query("SELECT s FROM Section s WHERE s.course.id = :courseId AND s.deletedAt IS NULL ORDER BY s.order")
     List<Section> findByCourseIdAndNotDeleted(@Param("courseId") Long courseId);
 

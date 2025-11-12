@@ -133,6 +133,7 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         course.updateBasicInfo(
                 request.getTitle(),
                 request.getDescription(),
@@ -149,6 +150,7 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         course.publish();
         return CourseDetailResponse.from(course);
     }
@@ -160,6 +162,7 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         course.archive();
         return CourseDetailResponse.from(course);
     }
@@ -171,8 +174,17 @@ public class CourseService {
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
         course.delete(enrolledUserCount); // validation + status transition + cascade delete
+    }
+
+    private void validateInstructorAccess(Course course, Long userId) {
+        if (!course.isOwnedBy(userId)) {
+            throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
+                    .withId(userId, course.getId())
+                    .build();
+        }
     }
 
 }
