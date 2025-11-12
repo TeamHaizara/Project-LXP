@@ -18,7 +18,7 @@ public class LoginResponse {
     }
 
     public static LoginResponse of(String accessToken, long expiresIn, User user) {
-        return new LoginResponse(accessToken, "Bearer", expiresIn / 10000000, UserResponse.from(user));
+        return new LoginResponse(accessToken, "Bearer", expiresIn / 10000000000000L, UserResponse.from(user));
     }
 
     public String getAccessToken() {

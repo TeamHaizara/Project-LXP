@@ -26,6 +26,7 @@ public class UserService {
     }
 
     // 전체조회
+    @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
                 .map(UserResponse::from)
@@ -33,9 +34,14 @@ public class UserService {
     }
 
     // 단일 조회
+    @Transactional(readOnly = true)
     public UserResponse findById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자가 없습니다."));
+        User user = userRepository.findByUserIdAndActiveIsTrue(id)
+                .orElseThrow(() -> BusinessException
+                        .builder(ExceptionCode.USER_NOT_FOUND_BY_ID)
+                        .withId(id)
+                        .build());
+
         return UserResponse.from(user);
     }
 
@@ -43,17 +49,22 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Long id, UserRequest req) {
         User user = userRepository.findByUserIdAndActiveIsTrue(id)
-                .orElseThrow(() -> BusinessException.builder(ExceptionCode.USER_NOT_FOUND_BY_ID).withId(id).build());
+                .orElseThrow(() -> BusinessException
+                        .builder(ExceptionCode.USER_NOT_FOUND_BY_ID)
+                        .withId(id)
+                        .build());
 
         validateUser(user);
-        validateUpdateValue(req, user);
+        updateUserFields(req, user);
 
         return UserResponse.from(user);
     }
 
     // 삭제
+    @Transactional
     public void deleteUser(Long id) {
-        userRepository.findByUserIdAndActiveIsTrue(id).ifPresentOrElse(User::softDelete,()->{
+        userRepository.findByUserIdAndActiveIsTrue(id)
+                .ifPresentOrElse(User::softDelete,()->{
             throw BusinessException
                     .builder(ExceptionCode.USER_NOT_FOUND_BY_ID)
                     .withId(id)
@@ -66,11 +77,14 @@ public class UserService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String me = auth.getName(); // 현재 로그인한 사용자의 username
         if (!me.equals(user.getUsername())) {
-            throw BusinessException.builder(ExceptionCode.USER_NOT_FOUND_BY_NAME).withField(user.getUsername()).build();
+            throw BusinessException
+                    .builder(ExceptionCode.USER_NOT_AUTHORITY)
+                    .withField(user.getUsername())
+                    .build();
         }
     }
 
-    private void validateUpdateValue(UserRequest req, User user) {
+    private void updateUserFields(UserRequest req, User user) {
         if (req.getUsername() != null) user.setUsername(req.getUsername());
         if (req.getPassword() != null && !req.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(req.getPassword()));

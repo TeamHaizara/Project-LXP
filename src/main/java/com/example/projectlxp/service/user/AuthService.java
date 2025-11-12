@@ -1,8 +1,8 @@
 package com.example.projectlxp.service.user;
 
-import com.example.projectlxp.controller.user.dto.response.LoginResponse;
 import com.example.projectlxp.controller.user.dto.request.LoginRequest;
 import com.example.projectlxp.controller.user.dto.request.SignupRequest;
+import com.example.projectlxp.controller.user.dto.response.LoginResponse;
 import com.example.projectlxp.controller.user.dto.response.UserResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -34,6 +35,7 @@ public class AuthService {
     }
 
     // 회원가입
+    @Transactional
     public UserResponse createUser(SignupRequest signupRequest) {
 
         if (userRepository.existsByUsername(signupRequest.getUsername())) {
@@ -53,10 +55,14 @@ public class AuthService {
     }
 
     // 로그인
+    @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(), loginRequest.getPassword()
+                )
+        );
 
         // 통과시킨 인증 정보에서 사용자명/권한 꺼내기
         String principalName = authentication.getName();
