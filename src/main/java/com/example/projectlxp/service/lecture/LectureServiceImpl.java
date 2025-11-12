@@ -40,13 +40,13 @@ public class LectureServiceImpl implements LectureService {
     @Override
     @Transactional
     public LectureResponse createLecture(Long courseId, Long sectionId, LectureCreateRequest requestDTO, Long userId) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
+        Section section = sectionRepository.findByIdWithCourse(sectionId) // FETCH JOIN
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND)
                         .withId(sectionId)
                         .build()
                 );
 
-        // sectionId가 courseId에 속하는지 검증
+        validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         // order가 지정되지 않으면 자동으로 마지막에 추가

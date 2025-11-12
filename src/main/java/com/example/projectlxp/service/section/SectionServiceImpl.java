@@ -37,6 +37,8 @@ public class SectionServiceImpl implements SectionService {
                         .withId(dto.courseId())
                         .build());
 
+        validateInstructorAccess(course, userId);
+
         // 섹션 순서(order) 중복 검증
         if (sectionRepository.existsByCourseIdAndOrderAndDeletedAtIsNull(dto.courseId(), dto.order())) {
             throw BusinessException.builder(ExceptionCode.DUPLICATE_SECTION_ORDER)
