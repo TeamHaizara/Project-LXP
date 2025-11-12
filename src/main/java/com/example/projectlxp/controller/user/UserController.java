@@ -49,20 +49,4 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
-
-    // 테스트 (강사만 접근 가능)
-    @GetMapping("/testIns")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
-    public String test(){
-
-        return "당신은 무조건 강사입니다.";
-    }
-
-    // 테스트 (강사/유저 둘다 접근 가능)
-    @GetMapping("/testAll")
-    @PreAuthorize("hasRole('LEARNER')")
-    public String testAll(){
-
-        return "당신은 강사 또는 학생입니다.";
-    }
 }
