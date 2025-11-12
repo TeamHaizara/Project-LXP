@@ -17,7 +17,7 @@ public class LectureController {
     public LectureController(LectureService lectureService) {
         this.lectureService = lectureService;
     }
-    
+
     @GetMapping("/{lectureId}")
     public ResponseEntity<LectureResponse> getLecture(@PathVariable Long lectureId) {
         LectureResponse response = lectureService.getLectureById(lectureId);

@@ -99,14 +99,6 @@ public class LectureServiceImpl implements LectureService {
                 .collect(Collectors.toList()));
     }
 
-    // 특정 코스의 모든 렉처 조회
-    public LectureListResponse getLecturesByCourse(Long courseId) {
-        return new LectureListResponse(lectureRepository.findBySectionCourseIdAsc(
-                        courseId).stream()
-                .map(LectureResponse::from)
-                .collect(Collectors.toList()));
-    }
-
     // 렉처 수정
     @Transactional
     public LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO) {

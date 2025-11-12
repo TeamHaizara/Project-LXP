@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,4 +58,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // 여러 ID로 코스 조회 (수강 중인 코스 목록용)
     @Query("SELECT c FROM Course c WHERE c.id IN :ids AND c.deletedAt IS NULL")
     List<Course> findByIdsAndNotDeleted(@Param("ids") List<Long> ids);
+
+    //스케줄러용 물리삭제 메서드
+    List<Course> findByStatusAndDeletedAtBefore(CourseStatus status, LocalDateTime threshold);
 }

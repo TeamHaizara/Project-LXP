@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,4 +17,7 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
     // 특정 강좌 내에서 order 값이 중복되는지 확인하기 위한 쿼리
     boolean existsByCourseIdAndOrderAndDeletedAtIsNull(Long courseId, Integer order);
+
+    //스케줄러용 물리삭제 메서드
+    List<Section> findByDeletedAtIsNotNullAndDeletedAtBefore(LocalDateTime threshold);
 }
