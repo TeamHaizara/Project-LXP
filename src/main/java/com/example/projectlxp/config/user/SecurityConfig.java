@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -59,11 +58,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/", "/api/auth/join").permitAll()
                         .anyRequest().authenticated());
 
-        // UsernamePasswordAuthenticationFilter 커스텀 필터 등록
-        http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)
-                        , jwtUtil), UsernamePasswordAuthenticationFilter.class);
-
         // JwtFilter 등록
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
@@ -73,7 +67,6 @@ public class SecurityConfig {
                 .sessionManagement((session)
                         -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
 
         return http.build();
     }
