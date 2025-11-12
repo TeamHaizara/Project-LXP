@@ -1,14 +1,12 @@
 package com.example.projectlxp.controller.uesr;
 
-import com.example.projectlxp.dto.user.request.SignupRequest;
-import com.example.projectlxp.dto.user.request.UserRequest;
-import com.example.projectlxp.dto.user.response.UserResponse;
+import com.example.projectlxp.controller.uesr.dto.request.UserRequest;
+import com.example.projectlxp.controller.uesr.dto.response.UserResponse;
 import com.example.projectlxp.service.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
