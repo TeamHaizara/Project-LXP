@@ -1,4 +1,4 @@
-package com.example.projectlxp.dto.user;
+package com.example.projectlxp.service.user.dto;
 
 import com.example.projectlxp.model.user.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -6,14 +6,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 
 public class CustomUserDetails implements UserDetails {
 
     private final User user;
 
-    public CustomUserDetails(Optional<User> user) {
-        this.user = user.get();
+    public CustomUserDetails(User user) {
+        this.user = user;
     }
 
     @Override

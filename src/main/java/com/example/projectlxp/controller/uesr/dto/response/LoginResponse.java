@@ -1,7 +1,6 @@
 // src/main/java/com/example/projectlxp/dto/user/LoginResponse.java
-package com.example.projectlxp.dto.user;
+package com.example.projectlxp.controller.uesr.dto.response;
 
-import com.example.projectlxp.dto.user.response.UserResponse;
 import com.example.projectlxp.model.user.User;
 
 public class LoginResponse {

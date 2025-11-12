@@ -1,4 +1,4 @@
-package com.example.projectlxp.dto.user.request;
+package com.example.projectlxp.controller.uesr.dto.request;
 
 import com.example.projectlxp.model.user.Role;
 import com.example.projectlxp.model.user.User;
