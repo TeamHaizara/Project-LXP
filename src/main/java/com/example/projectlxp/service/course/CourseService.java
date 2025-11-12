@@ -15,6 +15,7 @@ import com.example.projectlxp.service.course.dto.CourseSearchCriteria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,9 +32,9 @@ public class CourseService {
 
     // 코스 생성
     @Transactional
-    public CourseDetailResponse createCourse(CourseCreateRequest requestDTO) {
+    public CourseDetailResponse createCourse(CourseCreateRequest requestDTO, Long userId) {
         Course course = new Course(
-                requestDTO.getInstructorId(),
+                userId,
                 requestDTO.getCategoryId(),
                 requestDTO.getTitle(),
                 requestDTO.getDescription(),
@@ -89,9 +90,9 @@ public class CourseService {
     }
 
     // 강사별 코스 조회 (관리용, all status)
-    public CourseListResponse getCoursesByInstructorManage(Long instructorId) {
+    public CourseListResponse getCoursesByInstructorManage(Long userId) {
         return CourseListResponse.from(
-                courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
+                courseRepository.findByInstructorIdAndNotDeleted(userId).stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
@@ -127,7 +128,7 @@ public class CourseService {
 
     // 코스 수정
     @Transactional
-    public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request) {
+    public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
@@ -143,7 +144,7 @@ public class CourseService {
 
     // 코스 발행
     @Transactional
-    public CourseDetailResponse publishCourse(Long id) {
+    public CourseDetailResponse publishCourse(Long id, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
@@ -154,7 +155,7 @@ public class CourseService {
 
     // 코스 아카이빙
     @Transactional
-    public CourseDetailResponse archiveCourse(Long id) {
+    public CourseDetailResponse archiveCourse(Long id, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
@@ -165,7 +166,7 @@ public class CourseService {
 
     // 코스 삭제
     @Transactional
-    public void deleteCourse(Long id) {
+    public void deleteCourse(Long id, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)

@@ -30,7 +30,7 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionResponse createSection(SectionServiceDto dto) {
+    public SectionResponse createSection(SectionServiceDto dto, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(dto.courseId())
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(dto.courseId())
@@ -51,7 +51,7 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto) {
+    public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto, Long userId) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
                         .withId(sectionId)
@@ -75,7 +75,7 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public void deleteSection(Long courseId, Long sectionId) {
+    public void deleteSection(Long courseId, Long sectionId, Long userId) {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
                         .withId(sectionId)
@@ -89,7 +89,7 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public void reorderSections(Long courseId, List<Long> sectionIds) {
+    public void reorderSections(Long courseId, List<Long> sectionIds, Long userId) {
         courseRepository.findByIdAndNotDeleted(courseId)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(courseId)

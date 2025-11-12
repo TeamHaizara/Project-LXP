@@ -34,16 +34,22 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 생성
+    @Override
     @Transactional
-    public LectureResponse createLecture(LectureCreateRequest requestDTO) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(requestDTO.getSectionId())
-                .orElseThrow(
-                        () -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(requestDTO.getSectionId()).build());
+    public LectureResponse createLecture(Long courseId, Long sectionId, LectureCreateRequest requestDTO, Long userId) {
+        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
+                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build()
+                );
+
+        // sectionId가 courseId에 속하는지 검증
+        validateSectionBelongsToCourse(section, courseId);
 
         // order가 지정되지 않으면 자동으로 마지막에 추가
         Integer order = requestDTO.getOrder();
         if (order == null) {
-            order = lectureRepository.findMaxOrderBySectionId(requestDTO.getSectionId())
+            order = lectureRepository.findMaxOrderBySectionId(sectionId)
                     .orElse(0) + 1;
         }
 
@@ -100,13 +106,16 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 수정
+    @Override
     @Transactional
-    public LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO) {
+    public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO, Long userId) {
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
 
-        // sectionId 일치 검증
+        // lectureId가 sectionId에 속하는지 검증
         validateLectureBelongsToSection(lecture, sectionId);
+        // sectionId가 courseId에 속하는지 검증
+        validateSectionBelongsToCourse(lecture.getSection(), courseId);
 
         lecture.updateDetails(requestDTO);
 
@@ -115,13 +124,16 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 삭제 (Soft Delete)
+    @Override
     @Transactional
-    public void deleteLecture(Long sectionId, Long lectureId) {
+    public void deleteLecture(Long courseId, Long sectionId, Long lectureId, Long userId) {
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
 
-        // sectionId 일치 검증
+        // lectureId가 sectionId에 속하는지 검증
         validateLectureBelongsToSection(lecture, sectionId);
+        // sectionId가 courseId에 속하는지 검증
+        validateSectionBelongsToCourse(lecture.getSection(), courseId);
 
         lecture.softDelete();
         lectureRepository.save(lecture);
@@ -144,10 +156,14 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 순서 변경
+    @Override
     @Transactional
-    public void reorderLectures(Long sectionId, List<Long> lectureIds) {
-        sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
+    public void reorderLectures(Long courseId, Long sectionId, List<Long> lectureIds, Long userId) {
+        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
+
+        // sectionId가 courseId에 속하는지 검증
+        validateSectionBelongsToCourse(section, courseId);
 
         List<Lecture> lectures = lectureRepository.findAllByIdInAndStatusIsFalse(lectureIds);
 
@@ -163,13 +179,10 @@ public class LectureServiceImpl implements LectureService {
                 });
     }
 
-    private void validateReorderLecture(Long sectionId, Lecture lecture, Long lectureId) {
-        if (lecture == null) {
-            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build();
-        }
-
-        if (!Objects.equals(lecture.getSection().getId(), sectionId)) {
-            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(), sectionId)
+    private void validateSectionBelongsToCourse(Section section, Long expectedCourseId) {
+        if (!section.getCourse().getId().equals(expectedCourseId)) {
+            throw BusinessException.builder(ExceptionCode.SECTION_NOT_IN_COURSE)
+                    .withId(section.getId(), expectedCourseId)
                     .build();
         }
     }
@@ -181,5 +194,17 @@ public class LectureServiceImpl implements LectureService {
                     .build();
         }
     }
+
+    private void validateReorderLecture(Long sectionId, Lecture lecture, Long lectureId) {
+        if (lecture == null) {
+            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build();
+        }
+
+        if (!Objects.equals(lecture.getSection().getId(), sectionId)) {
+            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(), sectionId)
+                    .build();
+        }
+    }
+
 
 }

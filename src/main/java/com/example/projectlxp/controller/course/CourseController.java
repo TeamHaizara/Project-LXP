@@ -6,7 +6,6 @@ import com.example.projectlxp.controller.course.response.CourseDetailResponse;
 import com.example.projectlxp.controller.course.response.CourseListResponse;
 import com.example.projectlxp.controller.lecture.request.LectureCreateRequest;
 import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
-import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
 import com.example.projectlxp.controller.section.request.SectionCreateRequest;
 import com.example.projectlxp.controller.section.request.SectionUpdateRequest;
@@ -15,9 +14,11 @@ import com.example.projectlxp.service.course.CourseService;
 import com.example.projectlxp.service.course.dto.CourseSearchCriteria;
 import com.example.projectlxp.service.lecture.LectureService;
 import com.example.projectlxp.service.section.SectionService;
+import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -66,17 +67,20 @@ public class CourseController {
 
     // 코스 생성
     @PostMapping("/instructor/courses")
-    public ResponseEntity<CourseDetailResponse> createCourse(@Valid @RequestBody CourseCreateRequest requestDTO) {
-        CourseDetailResponse response = courseService.createCourse(requestDTO);
+    public ResponseEntity<CourseDetailResponse> createCourse(
+            @Valid @RequestBody CourseCreateRequest requestDTO,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        CourseDetailResponse response = courseService.createCourse(requestDTO, userDetails.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // 코스 목록 조회 Instructor 관리용
     @GetMapping("/instructor/courses")
     public ResponseEntity<CourseListResponse> getCoursesManageable(
-            @RequestParam(required = false) Long instructorId
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CourseListResponse response = courseService.getCoursesByInstructorManage(instructorId);
+        CourseListResponse response = courseService.getCoursesByInstructorManage(userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -84,30 +88,40 @@ public class CourseController {
     @PutMapping("/instructor/courses/{courseId}")
     public ResponseEntity<CourseDetailResponse> updateCourse(
             @PathVariable Long courseId,
-            @Valid @RequestBody CourseUpdateRequest requestDTO
+            @Valid @RequestBody CourseUpdateRequest requestDTO,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CourseDetailResponse response = courseService.updateCourse(courseId, requestDTO);
+        CourseDetailResponse response = courseService.updateCourse(courseId, requestDTO, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
     // 코스 발행
     @PostMapping("/instructor/courses/{courseId}/publish")
-    public ResponseEntity<CourseDetailResponse> publishCourse(@PathVariable Long courseId) {
-        CourseDetailResponse response = courseService.publishCourse(courseId);
+    public ResponseEntity<CourseDetailResponse> publishCourse(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        CourseDetailResponse response = courseService.publishCourse(courseId, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
     // 코스 아카이빙
     @PostMapping("/instructor/courses/{courseId}/archive")
-    public ResponseEntity<CourseDetailResponse> archiveCourse(@PathVariable Long courseId) {
-        CourseDetailResponse response = courseService.archiveCourse(courseId);
+    public ResponseEntity<CourseDetailResponse> archiveCourse(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        CourseDetailResponse response = courseService.archiveCourse(courseId, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
     // 코스 삭제
     @DeleteMapping("/instructor/courses/{courseId}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {
-        courseService.deleteCourse(courseId);
+    public ResponseEntity<Void> deleteCourse(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        courseService.deleteCourse(courseId, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -117,9 +131,10 @@ public class CourseController {
     @PostMapping("/instructor/courses/{courseId}/sections")
     public ResponseEntity<SectionResponse> createSection(
             @PathVariable Long courseId,
-            @Valid @RequestBody SectionCreateRequest request
+            @Valid @RequestBody SectionCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        SectionResponse response = sectionService.createSection(request.toDto(courseId));
+        SectionResponse response = sectionService.createSection(request.toDto(courseId), userDetails.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -128,9 +143,10 @@ public class CourseController {
     public ResponseEntity<SectionResponse> updateSection(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
-            @Valid @RequestBody SectionUpdateRequest request
+            @Valid @RequestBody SectionUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        SectionResponse response = sectionService.updateSection(courseId, sectionId, request.toDto());
+        SectionResponse response = sectionService.updateSection(courseId, sectionId, request.toDto(), userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -138,9 +154,10 @@ public class CourseController {
     @DeleteMapping("/instructor/courses/{courseId}/sections/{sectionId}")
     public ResponseEntity<Void> deleteSection(
             @PathVariable Long courseId,
-            @PathVariable Long sectionId
+            @PathVariable Long sectionId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        sectionService.deleteSection(courseId, sectionId);
+        sectionService.deleteSection(courseId, sectionId, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -148,9 +165,10 @@ public class CourseController {
     @PutMapping("/instructor/courses/{courseId}/sections/reorder")
     public ResponseEntity<Void> reorderSections(
             @PathVariable Long courseId,
-            @RequestBody List<Long> sectionIds
+            @RequestBody List<Long> sectionIds,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        sectionService.reorderSections(courseId, sectionIds);
+        sectionService.reorderSections(courseId, sectionIds, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -161,9 +179,10 @@ public class CourseController {
     public ResponseEntity<LectureResponse> createLecture(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
-            @Valid @RequestBody LectureCreateRequest request
+            @Valid @RequestBody LectureCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        LectureResponse response = lectureService.createLecture(request);
+        LectureResponse response = lectureService.createLecture(courseId, sectionId, request, userDetails.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -173,9 +192,10 @@ public class CourseController {
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
             @PathVariable Long lectureId,
-            @Valid @RequestBody LectureUpdateRequest request
+            @Valid @RequestBody LectureUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        LectureResponse response = lectureService.updateLecture(sectionId, lectureId, request);
+        LectureResponse response = lectureService.updateLecture(courseId, sectionId, lectureId, request, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -184,9 +204,10 @@ public class CourseController {
     public ResponseEntity<Void> deleteLecture(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
-            @PathVariable Long lectureId
+            @PathVariable Long lectureId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        lectureService.deleteLecture(sectionId, lectureId);
+        lectureService.deleteLecture(courseId, sectionId, lectureId, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -195,20 +216,11 @@ public class CourseController {
     public ResponseEntity<Void> reorderLectures(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
-            @RequestBody List<Long> lectureIds
+            @RequestBody List<Long> lectureIds,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        lectureService.reorderLectures(sectionId, lectureIds);
+        lectureService.reorderLectures(courseId, sectionId, lectureIds, userDetails.getUserId());
         return ResponseEntity.noContent().build();
-    }
-
-    // 섹션의 렉처 목록 조회
-    @GetMapping("/instructor/courses/{courseId}/sections/{sectionId}/lectures")
-    public ResponseEntity<LectureListResponse> getLecturesBySection(
-            @PathVariable Long courseId,
-            @PathVariable Long sectionId
-    ) {
-        LectureListResponse response = lectureService.getLecturesBySection(sectionId);
-        return ResponseEntity.ok(response);
     }
 
 }
