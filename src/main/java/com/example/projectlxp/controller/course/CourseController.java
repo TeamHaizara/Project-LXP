@@ -39,13 +39,6 @@ public class CourseController {
         this.lectureService = lectureService;
     }
 
-    // 코스 생성
-    @PostMapping
-    public ResponseEntity<CourseDetailResponse> createCourse(@Valid @RequestBody CourseCreateRequest requestDTO) {
-        CourseDetailResponse response = courseService.createCourse(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
     // 코스 목록 조회 (쿼리 파라미터로 필터링)
     @GetMapping
     public ResponseEntity<CourseListResponse> getCourses(
@@ -73,6 +66,25 @@ public class CourseController {
     @GetMapping("/{courseId}")
     public ResponseEntity<CourseDetailResponse> getCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.getCourseById(courseId);
+        return ResponseEntity.ok(response);
+    }
+
+
+    // ========== Course Management APIs ==========
+
+    // 코스 생성
+    @PostMapping
+    public ResponseEntity<CourseDetailResponse> createCourse(@Valid @RequestBody CourseCreateRequest requestDTO) {
+        CourseDetailResponse response = courseService.createCourse(requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // 코스 목록 조회 Instructor 관리용
+    @GetMapping
+    public ResponseEntity<CourseListResponse> getCoursesManageable(
+            @RequestParam(required = false) Long instructorId
+    ) {
+        CourseListResponse response = courseService.getCoursesByInstructorManage(instructorId);
         return ResponseEntity.ok(response);
     }
 

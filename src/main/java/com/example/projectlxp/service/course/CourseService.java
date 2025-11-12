@@ -59,14 +59,23 @@ public class CourseService {
     // 모든 코스 조회
     public CourseListResponse getAllCourses() {
         return CourseListResponse.from(
-                courseRepository.findAllNotDeleted().stream()
+                courseRepository.findAllPublished().stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
     }
 
-    // 강사별 코스 조회
+    // 강사별 코스 조회 (조회용, published only)
     public CourseListResponse getCoursesByInstructor(Long instructorId) {
+        return CourseListResponse.from(
+                courseRepository.findByInstructorIdAndPublished(instructorId).stream()
+                        .map(CourseResponse::from)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    // 강사별 코스 조회 (관리용, all status)
+    public CourseListResponse getCoursesByInstructorManage(Long instructorId) {
         return CourseListResponse.from(
                 courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
                         .map(CourseResponse::from)
@@ -77,7 +86,7 @@ public class CourseService {
     // 카테고리별 코스 조회
     public CourseListResponse getCoursesByCategory(Long categoryId) {
         return CourseListResponse.from(
-                courseRepository.findByCategoryIdAndNotDeleted(categoryId).stream()
+                courseRepository.findByCategoryIdAndPublished(categoryId).stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
@@ -87,7 +96,7 @@ public class CourseService {
     public CourseListResponse getCoursesByStatus(String status) {
         CourseStatus courseStatus = CourseStatus.from(status);
         return CourseListResponse.from(
-                courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
+                courseRepository.findByStatus(courseStatus).stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
@@ -96,7 +105,7 @@ public class CourseService {
     // 제목 검색
     public CourseListResponse searchCoursesByTitle(String keyword) {
         return CourseListResponse.from(
-                courseRepository.searchByTitleAndNotDeleted(keyword).stream()
+                courseRepository.searchByTitleAndPublished(keyword).stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
@@ -105,7 +114,7 @@ public class CourseService {
     // 코스 수정
     @Transactional
     public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
+        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
@@ -121,7 +130,7 @@ public class CourseService {
     // 코스 발행
     @Transactional
     public CourseDetailResponse publishCourse(Long id) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
+        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
@@ -132,7 +141,7 @@ public class CourseService {
     // 코스 아카이빙
     @Transactional
     public CourseDetailResponse archiveCourse(Long id) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
+        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
@@ -143,7 +152,7 @@ public class CourseService {
     // 코스 삭제
     @Transactional
     public void deleteCourse(Long id) {
-        Course course = courseRepository.findByIdAndNotDeleted(id)
+        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
