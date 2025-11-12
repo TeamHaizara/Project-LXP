@@ -18,6 +18,13 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     @Query("SELECT l FROM Lecture l WHERE l.id = :id AND l.status IS FALSE")
     Optional<Lecture> findByIdAndDeletedAtIsNull(@Param("id") Long id);
 
+    // Section과 Course를 함께 조회
+    @Query("SELECT l FROM Lecture l " +
+            "JOIN FETCH l.section s " +
+            "JOIN FETCH s.course c " +
+            "WHERE l.id = :id AND l.status IS FALSE")
+    Optional<Lecture> findByIdWithSectionAndCourse(@Param("id") Long id);
+
     // 삭제되지 않은 모든 렉처 조회
     @Query("SELECT l FROM Lecture l WHERE l.status IS FALSE")
     List<Lecture> findAllNotDeleted();

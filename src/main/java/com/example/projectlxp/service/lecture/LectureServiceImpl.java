@@ -109,13 +109,9 @@ public class LectureServiceImpl implements LectureService {
     @Override
     @Transactional
     public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO, Long userId) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
-
-        // lectureId가 sectionId에 속하는지 검증
-        validateLectureBelongsToSection(lecture, sectionId);
-        // sectionId가 courseId에 속하는지 검증
-        validateSectionBelongsToCourse(lecture.getSection(), courseId);
+        Lecture lecture = findLectureWithRelations(lectureId);
+        validateInstructorAccess(lecture, courseId, userId);
+        validateLectureHierarchy(lecture, courseId, sectionId);
 
         lecture.updateDetails(requestDTO);
 
@@ -127,32 +123,12 @@ public class LectureServiceImpl implements LectureService {
     @Override
     @Transactional
     public void deleteLecture(Long courseId, Long sectionId, Long lectureId, Long userId) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
-
-        // lectureId가 sectionId에 속하는지 검증
-        validateLectureBelongsToSection(lecture, sectionId);
-        // sectionId가 courseId에 속하는지 검증
-        validateSectionBelongsToCourse(lecture.getSection(), courseId);
+        Lecture lecture = findLectureWithRelations(lectureId);
+        validateInstructorAccess(lecture, courseId, userId);
+        validateLectureHierarchy(lecture, courseId, sectionId);
 
         lecture.softDelete();
         lectureRepository.save(lecture);
-    }
-
-    //섹션 아이디 내의 렉처 CASCADE 삭제 처리
-    @Transactional
-    public void deleteLecturesBySection(Long sectionId) {
-        sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
-
-        List<Lecture> lectureListBySection = lectureRepository.findBySectionIdAsc(sectionId);
-
-        if (lectureListBySection.isEmpty()) {
-            return;
-        }
-
-        lectureListBySection.forEach(Lecture::softDelete);
-        lectureRepository.saveAll(lectureListBySection);
     }
 
     // 렉처 순서 변경
@@ -177,6 +153,27 @@ public class LectureServiceImpl implements LectureService {
 
                     validateReorderLecture(sectionId, lecture, lectureId);
                 });
+    }
+
+    private Lecture findLectureWithRelations(Long lectureId) {
+        return lectureRepository.findByIdWithSectionAndCourse(lectureId)
+                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND)
+                        .withId(lectureId)
+                        .build());
+    }
+
+    private void validateInstructorAccess(Lecture lecture, Long courseId, Long userId) {
+        Course course = lecture.getSection().getCourse();
+        if (!course.isOwnedBy(userId)) {
+            throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
+                    .withId(userId, courseId)
+                    .build();
+        }
+    }
+
+    private void validateLectureHierarchy(Lecture lecture, Long courseId, Long sectionId) {
+        validateLectureBelongsToSection(lecture, sectionId);
+        validateSectionBelongsToCourse(lecture.getSection(), courseId);
     }
 
     private void validateSectionBelongsToCourse(Section section, Long expectedCourseId) {

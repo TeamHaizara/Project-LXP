@@ -12,6 +12,9 @@ import java.util.Optional;
 public interface SectionRepository extends JpaRepository<Section, Long> {
     Optional<Section> findByIdAndDeletedAtIsNull(Long sectionId);
 
+    @Query("SELECT s FROM Section s JOIN FETCH s.course WHERE s.id = :sectionId AND s.deletedAt IS NULL")
+    Optional<Section> findByIdWithCourse(@Param("sectionId") Long sectionId);
+
     @Query("SELECT s FROM Section s WHERE s.course.id = :courseId AND s.deletedAt IS NULL ORDER BY s.order")
     List<Section> findByCourseIdAndNotDeleted(@Param("courseId") Long courseId);
 

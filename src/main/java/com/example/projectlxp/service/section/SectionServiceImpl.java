@@ -52,12 +52,8 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto, Long userId) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
-                        .withId(sectionId)
-                        .build());
-
-        // courseId 일치 검증
+        Section section = findSectionWithCourse(sectionId);
+        validateInstructorAccess(section, courseId, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         // 섹션 순서(order)를 변경하는 경우에만 중복 검증
@@ -76,12 +72,8 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public void deleteSection(Long courseId, Long sectionId, Long userId) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
-                        .withId(sectionId)
-                        .build());
-
-        // courseId 일치 검증
+        Section section = findSectionWithCourse(sectionId);
+        validateInstructorAccess(section, courseId, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         section.cascadeSoftDelete();

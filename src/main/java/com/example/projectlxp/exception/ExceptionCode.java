@@ -10,11 +10,12 @@ public enum ExceptionCode implements ErrorCode {
     COURSE_STATUS_NULL(HttpStatus.BAD_REQUEST, "Course status cannot be null or blank."),
     INVALID_COURSE_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "Invalid status transition: %s -> %s"),
     INVALID_COURSE_STATUS(HttpStatus.BAD_REQUEST, "Invalid course status: %s"),
+    NOT_COURSE_INSTRUCTOR(HttpStatus.FORBIDDEN, "User %d is not the instructor of course %d"),
 
     // Section
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Section not found with id: %d"),
     DUPLICATE_SECTION_ORDER(HttpStatus.CONFLICT, "Duplicate section order: %d"),
-    INVALID_SECTION_REORDER_REQUEST(HttpStatus.BAD_REQUEST, "Invalid section reorder request: %s"),
+    INVALID_SECTION_REORDER_REQUEST(HttpStatus.BAD_REQUEST, "The provided section IDs do not match the sections in the course"),
     SECTION_NOT_IN_COURSE(HttpStatus.BAD_REQUEST, "Section %d does not belong to course %d"),
 
     // Category
@@ -26,6 +27,7 @@ public enum ExceptionCode implements ErrorCode {
 
     // Lecture
     LECTURE_NOT_IN_SECTION(HttpStatus.BAD_REQUEST, "Lecture %d does not belong to section %d"),
+    INVALID_LECTURE_REORDER_REQUEST(HttpStatus.BAD_REQUEST, "The provided lecture IDs do not match the lectures in the section"),
 
     // Enrolled course
     ALREADY_ENROLLED(HttpStatus.BAD_REQUEST, "Already enrolled"),
