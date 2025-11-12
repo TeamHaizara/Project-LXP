@@ -7,8 +7,6 @@ import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.user.User;
 import com.example.projectlxp.repository.user.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +34,7 @@ public class UserService {
     // 단일 조회
     @Transactional(readOnly = true)
     public UserResponse findById(Long id) {
-        User user = userRepository.findByUserIdAndActiveIsTrue(id)
+        User user = userRepository.findByUserId(id)
                 .orElseThrow(() -> BusinessException
                         .builder(ExceptionCode.USER_NOT_FOUND_BY_ID)
                         .withId(id)
@@ -45,43 +43,30 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    // 수정
+    // 내 정보 수정
     @Transactional
     public UserResponse updateUser(Long id, UserRequest req) {
-        User user = userRepository.findByUserIdAndActiveIsTrue(id)
+        User user = userRepository.findByUserId(id)
                 .orElseThrow(() -> BusinessException
                         .builder(ExceptionCode.USER_NOT_FOUND_BY_ID)
                         .withId(id)
                         .build());
 
-        validateUser(user);
         updateUserFields(req, user);
 
         return UserResponse.from(user);
     }
 
-    // 삭제
+    // 회원 탈퇴
     @Transactional
     public void deleteUser(Long id) {
-        userRepository.findByUserIdAndActiveIsTrue(id)
-                .ifPresentOrElse(User::softDelete,()->{
+        userRepository.findByUserId(id)
+                .ifPresentOrElse(User::softDelete, ()-> {
             throw BusinessException
                     .builder(ExceptionCode.USER_NOT_FOUND_BY_ID)
                     .withId(id)
                     .build();
         });
-    }
-
-    private void validateUser(User user) {
-        // 본인만 수정 허용
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String me = auth.getName(); // 현재 로그인한 사용자의 username
-        if (!me.equals(user.getUsername())) {
-            throw BusinessException
-                    .builder(ExceptionCode.USER_NOT_AUTHORITY)
-                    .withField(user.getUsername())
-                    .build();
-        }
     }
 
     private void updateUserFields(UserRequest req, User user) {
@@ -92,7 +77,7 @@ public class UserService {
         if (req.getNickname() != null) user.setNickname(req.getNickname());
         if (req.getInterest() != null) user.setInterest(req.getInterest());
         if (req.getRoles() != null && !req.getRoles().isEmpty()) {
-            user.setRoles(req.getRoles()); // 타입/매핑에 맞게 세터 구현
+            user.setRoles(req.getRoles());
         }
     }
 }

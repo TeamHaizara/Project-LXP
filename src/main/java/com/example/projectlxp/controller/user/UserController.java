@@ -3,8 +3,10 @@ package com.example.projectlxp.controller.user;
 import com.example.projectlxp.controller.user.dto.request.UserRequest;
 import com.example.projectlxp.controller.user.dto.response.UserResponse;
 import com.example.projectlxp.service.user.UserService;
+import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,18 +45,19 @@ public class UserController {
         Long myId = me.getUserId();
         return userService.findById(myId);
     }
+
     // 수정
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserRequest userRequest) {
 
-        return ResponseEntity.ok(userService.updateUser(id, userRequest));
+        return ResponseEntity.ok(userService.updateUser(userDetails.getUserId(), userRequest));
     }
 
     // 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        userService.deleteUser(id);
+        userService.deleteUser(userDetails.getUserId());
 
         return ResponseEntity.noContent().build();
     }
