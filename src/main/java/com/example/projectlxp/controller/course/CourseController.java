@@ -12,6 +12,7 @@ import com.example.projectlxp.controller.section.request.SectionCreateRequest;
 import com.example.projectlxp.controller.section.request.SectionUpdateRequest;
 import com.example.projectlxp.controller.section.response.SectionResponse;
 import com.example.projectlxp.service.course.CourseService;
+import com.example.projectlxp.service.course.dto.CourseSearchCriteria;
 import com.example.projectlxp.service.lecture.LectureService;
 import com.example.projectlxp.service.section.SectionService;
 import jakarta.validation.Valid;
@@ -46,22 +47,16 @@ public class CourseController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyword
     ) {
-        CourseListResponse response;
-        if (instructorId != null) {
-            response = courseService.getCoursesByInstructor(instructorId);
-        } else if (categoryId != null) {
-            response = courseService.getCoursesByCategory(categoryId);
-        } else if (keyword != null) {
-            response = courseService.searchCoursesByTitle(keyword);
-        } else {
-            response = courseService.getAllCourses();
-        }
+        CourseSearchCriteria criteria = new CourseSearchCriteria(instructorId, categoryId, keyword);
+        CourseListResponse response = courseService.searchCourses(criteria);
         return ResponseEntity.ok(response);
     }
 
     // 코스 상세 조회 (섹션, 렉처 트리 포함)
     @GetMapping("/courses/{courseId}")
-    public ResponseEntity<CourseDetailResponse> getCourse(@PathVariable Long courseId) {
+    public ResponseEntity<CourseDetailResponse> getCourse(
+            @PathVariable Long courseId
+    ) {
         CourseDetailResponse response = courseService.getCourseById(courseId);
         return ResponseEntity.ok(response);
     }

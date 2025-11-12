@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, Long> {
+public interface CourseRepository extends JpaRepository<Course, Long>, CourseRepositoryCustom {
 
     // 단일 코스 조회
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status != 'DELETED'")
