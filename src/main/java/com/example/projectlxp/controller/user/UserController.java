@@ -34,6 +34,15 @@ public class UserController {
         return ResponseEntity.ok(userService.findById(id));
     }
 
+    // 내 정보 조회
+    @GetMapping("/me")
+    public UserResponse me(@AuthenticationPrincipal CustomUserDetails me) {
+
+        SecurityContextHolder.getContext().getAuthentication();
+
+        Long myId = me.getUserId();
+        return userService.findById(myId);
+    }
     // 수정
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
