@@ -24,9 +24,6 @@ public interface LectureService {
     // 특정 타입의 렉처 조회
     LectureListResponse getLecturesBySectionAndType(Long sectionId, LectureType type);
 
-    // 특정 코스의 모든 렉처 조회
-    LectureListResponse getLecturesByCourse(Long courseId);
-
     // 렉처 수정
     LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO);
 
