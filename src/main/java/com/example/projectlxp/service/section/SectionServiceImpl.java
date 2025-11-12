@@ -55,7 +55,7 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto, Long userId) {
-        Section section = findSectionWithCourse(sectionId); // FETCH JOINED
+        Section section = findSectionWithRelations(sectionId); // FETCH JOINED
         validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
@@ -75,7 +75,7 @@ public class SectionServiceImpl implements SectionService {
     @Override
     @Transactional
     public void deleteSection(Long courseId, Long sectionId, Long userId) {
-        Section section = findSectionWithCourse(sectionId); // FETCH JOINED
+        Section section = findSectionWithRelations(sectionId); // FETCH JOINED
         validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
@@ -110,7 +110,7 @@ public class SectionServiceImpl implements SectionService {
                 });
     }
 
-    private Section findSectionWithCourse(Long sectionId) {
+    private Section findSectionWithRelations(Long sectionId) {
         return sectionRepository.findByIdWithCourse(sectionId)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
                         .withId(sectionId)

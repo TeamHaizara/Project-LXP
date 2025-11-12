@@ -72,7 +72,7 @@ public class CourseService {
     }
 
     // 강사별 코스 조회 (관리용, all status)
-    public CourseListResponse getCoursesByInstructorManage(Long userId) {
+    public CourseListResponse getInstructorCourses(Long userId) {
         return CourseListResponse.from(
                 courseRepository.findByInstructorIdAndNotDeleted(userId).stream()
                         .map(CourseResponse::from)

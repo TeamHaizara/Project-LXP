@@ -70,7 +70,7 @@ public class EnrolledCourseService {
 
     private void validateAlreadyEnrolled(Long userId, Long courseId) {
         if (enrolledCourseRepository.existsByUserIdAndCourseId(userId, courseId)) {
-            throw BusinessException.builder(ExceptionCode.ALREADY_ENROLLED).build();
+            throw BusinessException.builder(ExceptionCode.ALREADY_ENROLLED).withId(courseId).build();
         }
     }
 

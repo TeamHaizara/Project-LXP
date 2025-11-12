@@ -77,10 +77,10 @@ public class CourseController {
 
     // 코스 목록 조회 Instructor 관리용
     @GetMapping("/instructor/courses")
-    public ResponseEntity<CourseListResponse> getCoursesManageable(
+    public ResponseEntity<CourseListResponse> getInstructorCourses(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CourseListResponse response = courseService.getCoursesByInstructorManage(userDetails.getUserId());
+        CourseListResponse response = courseService.getInstructorCourses(userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
