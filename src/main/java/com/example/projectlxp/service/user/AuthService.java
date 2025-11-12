@@ -47,3 +47,28 @@ public class AuthService {
 
         return UserResponse.from(saved);
     }
+
+    // 로그인
+    public LoginResponse login(LoginRequest loginRequest) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        // 통과시킨 인증 정보에서 사용자명/권한 꺼내기
+        String principalName = authentication.getName();
+
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
+                .orElse("ROLE_LEARNER");
+
+        // 토큰 발급 (JwtUtil 사용)
+        String accessToken = jwtUtil.createToken(principalName, role, ACCESS_EXPIRE_MS);
+
+        User user = userRepository.findByUsername(principalName)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 유저를 찾지 못했습니다."));
+
+        return LoginResponse.of(accessToken, ACCESS_EXPIRE_MS, user);
+    }
+}
