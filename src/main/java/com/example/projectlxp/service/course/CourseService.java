@@ -114,7 +114,7 @@ public class CourseService {
     // 코스 수정
     @Transactional
     public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request) {
-        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
+        Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
@@ -130,7 +130,7 @@ public class CourseService {
     // 코스 발행
     @Transactional
     public CourseDetailResponse publishCourse(Long id) {
-        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
+        Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
@@ -141,7 +141,7 @@ public class CourseService {
     // 코스 아카이빙
     @Transactional
     public CourseDetailResponse archiveCourse(Long id) {
-        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
+        Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
@@ -152,7 +152,7 @@ public class CourseService {
     // 코스 삭제
     @Transactional
     public void deleteCourse(Long id) {
-        Course course = courseRepository.findByIdAndStatusNotDeleted(id)
+        Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());

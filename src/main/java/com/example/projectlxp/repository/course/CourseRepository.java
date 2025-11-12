@@ -17,7 +17,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     // 단일 코스 조회
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status != 'DELETED'")
-    Optional<Course> findByIdAndStatusNotDeleted(@Param("id") Long id);
+    Optional<Course> findByIdAndNotDeleted(@Param("id") Long id);
 
     // Course + Section 조회 (fetch join step 1)
     @Query("SELECT DISTINCT c FROM Course c " +

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/api")
 public class CourseController {
 
     private final CourseService courseService;
@@ -40,11 +40,10 @@ public class CourseController {
     }
 
     // 코스 목록 조회 (쿼리 파라미터로 필터링)
-    @GetMapping
+    @GetMapping("/courses")
     public ResponseEntity<CourseListResponse> getCourses(
             @RequestParam(required = false) Long instructorId,
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword
     ) {
         CourseListResponse response;
@@ -52,8 +51,6 @@ public class CourseController {
             response = courseService.getCoursesByInstructor(instructorId);
         } else if (categoryId != null) {
             response = courseService.getCoursesByCategory(categoryId);
-        } else if (status != null) {
-            response = courseService.getCoursesByStatus(status);
         } else if (keyword != null) {
             response = courseService.searchCoursesByTitle(keyword);
         } else {
@@ -63,7 +60,7 @@ public class CourseController {
     }
 
     // 코스 상세 조회 (섹션, 렉처 트리 포함)
-    @GetMapping("/{courseId}")
+    @GetMapping("/courses/{courseId}")
     public ResponseEntity<CourseDetailResponse> getCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.getCourseById(courseId);
         return ResponseEntity.ok(response);
@@ -73,14 +70,14 @@ public class CourseController {
     // ========== Course Management APIs ==========
 
     // 코스 생성
-    @PostMapping
+    @PostMapping("/instructor/courses")
     public ResponseEntity<CourseDetailResponse> createCourse(@Valid @RequestBody CourseCreateRequest requestDTO) {
         CourseDetailResponse response = courseService.createCourse(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // 코스 목록 조회 Instructor 관리용
-    @GetMapping
+    @GetMapping("/instructor/courses")
     public ResponseEntity<CourseListResponse> getCoursesManageable(
             @RequestParam(required = false) Long instructorId
     ) {
@@ -89,7 +86,7 @@ public class CourseController {
     }
 
     // 코스 수정
-    @PutMapping("/{courseId}")
+    @PutMapping("/instructor/courses/{courseId}")
     public ResponseEntity<CourseDetailResponse> updateCourse(
             @PathVariable Long courseId,
             @Valid @RequestBody CourseUpdateRequest requestDTO
@@ -99,21 +96,21 @@ public class CourseController {
     }
 
     // 코스 발행
-    @PostMapping("/{courseId}/publish")
+    @PostMapping("/instructor/courses/{courseId}/publish")
     public ResponseEntity<CourseDetailResponse> publishCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.publishCourse(courseId);
         return ResponseEntity.ok(response);
     }
 
     // 코스 아카이빙
-    @PostMapping("/{courseId}/archive")
+    @PostMapping("/instructor/courses/{courseId}/archive")
     public ResponseEntity<CourseDetailResponse> archiveCourse(@PathVariable Long courseId) {
         CourseDetailResponse response = courseService.archiveCourse(courseId);
         return ResponseEntity.ok(response);
     }
 
     // 코스 삭제
-    @DeleteMapping("/{courseId}")
+    @DeleteMapping("/instructor/courses/{courseId}")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {
         courseService.deleteCourse(courseId);
         return ResponseEntity.noContent().build();
@@ -122,7 +119,7 @@ public class CourseController {
     // ========== Section Management APIs ==========
 
     // 섹션 생성
-    @PostMapping("/{courseId}/sections")
+    @PostMapping("/instructor/courses/{courseId}/sections")
     public ResponseEntity<SectionResponse> createSection(
             @PathVariable Long courseId,
             @Valid @RequestBody SectionCreateRequest request
@@ -132,7 +129,7 @@ public class CourseController {
     }
 
     // 섹션 수정
-    @PutMapping("/{courseId}/sections/{sectionId}")
+    @PutMapping("/instructor/courses/{courseId}/sections/{sectionId}")
     public ResponseEntity<SectionResponse> updateSection(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
@@ -143,7 +140,7 @@ public class CourseController {
     }
 
     // 섹션 삭제
-    @DeleteMapping("/{courseId}/sections/{sectionId}")
+    @DeleteMapping("/instructor/courses/{courseId}/sections/{sectionId}")
     public ResponseEntity<Void> deleteSection(
             @PathVariable Long courseId,
             @PathVariable Long sectionId
@@ -153,7 +150,7 @@ public class CourseController {
     }
 
     // 섹션 순서 변경
-    @PutMapping("/{courseId}/sections/reorder")
+    @PutMapping("/instructor/courses/{courseId}/sections/reorder")
     public ResponseEntity<Void> reorderSections(
             @PathVariable Long courseId,
             @RequestBody List<Long> sectionIds
@@ -165,7 +162,7 @@ public class CourseController {
     // ========== Lecture Management APIs ==========
 
     // 렉처 생성
-    @PostMapping("/{courseId}/sections/{sectionId}/lectures")
+    @PostMapping("/instructor/courses/{courseId}/sections/{sectionId}/lectures")
     public ResponseEntity<LectureResponse> createLecture(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
@@ -176,7 +173,7 @@ public class CourseController {
     }
 
     // 렉처 수정
-    @PutMapping("/{courseId}/sections/{sectionId}/lectures/{lectureId}")
+    @PutMapping("/instructor/courses/{courseId}/sections/{sectionId}/lectures/{lectureId}")
     public ResponseEntity<LectureResponse> updateLecture(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
@@ -188,7 +185,7 @@ public class CourseController {
     }
 
     // 렉처 삭제
-    @DeleteMapping("/{courseId}/sections/{sectionId}/lectures/{lectureId}")
+    @DeleteMapping("/instructor/courses/{courseId}/sections/{sectionId}/lectures/{lectureId}")
     public ResponseEntity<Void> deleteLecture(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
@@ -199,7 +196,7 @@ public class CourseController {
     }
 
     // 섹션 내 렉처 순서 변경
-    @PutMapping("/{courseId}/sections/{sectionId}/lectures/reorder")
+    @PutMapping("/instructor/courses/{courseId}/sections/{sectionId}/lectures/reorder")
     public ResponseEntity<Void> reorderLectures(
             @PathVariable Long courseId,
             @PathVariable Long sectionId,
@@ -210,7 +207,7 @@ public class CourseController {
     }
 
     // 섹션의 렉처 목록 조회
-    @GetMapping("/{courseId}/sections/{sectionId}/lectures")
+    @GetMapping("/instructor/courses/{courseId}/sections/{sectionId}/lectures")
     public ResponseEntity<LectureListResponse> getLecturesBySection(
             @PathVariable Long courseId,
             @PathVariable Long sectionId
