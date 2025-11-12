@@ -1,4 +1,4 @@
-package com.example.projectlxp.controller.uesr.dto.request;
+package com.example.projectlxp.controller.user.dto.request;
 
 public class LoginRequest {
 

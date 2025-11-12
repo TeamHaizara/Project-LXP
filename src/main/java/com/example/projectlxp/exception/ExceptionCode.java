@@ -28,7 +28,9 @@ public enum ExceptionCode implements ErrorCode {
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "Payment failed. try again later"),
 
     //User
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found with id: %d");
+    USER_NOT_FOUND_BY_ID(HttpStatus.NOT_FOUND, "User not found with id : %d"),
+    USER_NOT_FOUND_BY_NAME(HttpStatus.NOT_FOUND, "User not found with name : %s"),
+    USER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "User already exists with name : %s"),;
 
     private final HttpStatus status;
     private final String message;

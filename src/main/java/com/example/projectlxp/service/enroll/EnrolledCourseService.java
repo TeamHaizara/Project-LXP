@@ -64,7 +64,7 @@ public class EnrolledCourseService {
 
     private void validateExistUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw BusinessException.builder(ExceptionCode.USER_NOT_FOUND).withId(userId).build();
+            throw BusinessException.builder(ExceptionCode.USER_NOT_FOUND_BY_ID).withId(userId).build();
         }
     }
 

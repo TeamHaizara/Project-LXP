@@ -1,9 +1,9 @@
-package com.example.projectlxp.controller.uesr;
+package com.example.projectlxp.controller.user;
 
-import com.example.projectlxp.controller.uesr.dto.response.LoginResponse;
-import com.example.projectlxp.controller.uesr.dto.request.LoginRequest;
-import com.example.projectlxp.controller.uesr.dto.request.SignupRequest;
-import com.example.projectlxp.controller.uesr.dto.response.UserResponse;
+import com.example.projectlxp.controller.user.dto.response.LoginResponse;
+import com.example.projectlxp.controller.user.dto.request.LoginRequest;
+import com.example.projectlxp.controller.user.dto.request.SignupRequest;
+import com.example.projectlxp.controller.user.dto.response.UserResponse;
 import com.example.projectlxp.service.user.AuthService;
 import com.example.projectlxp.service.user.UserService;
 import org.springframework.http.HttpStatus;

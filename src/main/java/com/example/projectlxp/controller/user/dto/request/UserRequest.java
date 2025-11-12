@@ -1,11 +1,11 @@
-package com.example.projectlxp.controller.uesr.dto.request;
+package com.example.projectlxp.controller.user.dto.request;
 
 import com.example.projectlxp.model.user.Role;
 import com.example.projectlxp.model.user.User;
 
 import java.util.List;
 
-public class SignupRequest {
+public class UserRequest {
 
     private String username;
     private String password;
@@ -13,7 +13,7 @@ public class SignupRequest {
     private String interest;
     private List<Role> roles;
 
-    public SignupRequest(){}
+    public UserRequest(){}
 
     public String getUsername() {
         return username;

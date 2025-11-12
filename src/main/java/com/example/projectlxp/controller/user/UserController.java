@@ -1,7 +1,7 @@
-package com.example.projectlxp.controller.uesr;
+package com.example.projectlxp.controller.user;
 
-import com.example.projectlxp.controller.uesr.dto.request.UserRequest;
-import com.example.projectlxp.controller.uesr.dto.response.UserResponse;
+import com.example.projectlxp.controller.user.dto.request.UserRequest;
+import com.example.projectlxp.controller.user.dto.response.UserResponse;
 import com.example.projectlxp.service.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
