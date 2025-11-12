@@ -6,6 +6,7 @@ import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
+import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
@@ -15,9 +16,11 @@ import com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -138,20 +141,24 @@ public class LectureServiceImpl implements LectureService {
         Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
                 .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
 
-        // sectionId가 courseId에 속하는지 검증
         validateSectionBelongsToCourse(section, courseId);
 
-        List<Lecture> lectures = lectureRepository.findAllByIdInAndStatusIsFalse(lectureIds);
+        List<Lecture> lecturesInDb = lectureRepository.findBySectionIdAsc(sectionId);
+        Map<Long, Lecture> lectureMap = lecturesInDb.stream()
+                .collect(Collectors.toMap(Lecture::getId, Function.identity()));
 
-        Map<Long, Lecture> lectureMap = lectures.stream()
-                .collect(Collectors.toMap(Lecture::getId, lecture -> lecture));
+        Set<Long> dbLectureIds = lectureMap.keySet();
+        Set<Long> requestLectureIds = new HashSet<>(lectureIds);
+
+        if (!dbLectureIds.equals(requestLectureIds)) {
+            throw BusinessException.builder(ExceptionCode.INVALID_LECTURE_REORDER_REQUEST)
+                    .build();
+        }
 
         IntStream.range(0, lectureIds.size())
                 .forEach(i -> {
-                    Long lectureId = lectureIds.get(i);
-                    Lecture lecture = lectureMap.get(lectureId);
-
-                    validateReorderLecture(sectionId, lecture, lectureId);
+                    Lecture lecture = lectureMap.get(lectureIds.get(i));
+                    lecture.updateOrder(i + 1);
                 });
     }
 
@@ -188,17 +195,6 @@ public class LectureServiceImpl implements LectureService {
         if (!lecture.getSection().getId().equals(expectedSectionId)) {
             throw BusinessException.builder(ExceptionCode.LECTURE_NOT_IN_SECTION)
                     .withId(lecture.getId(), expectedSectionId)
-                    .build();
-        }
-    }
-
-    private void validateReorderLecture(Long sectionId, Lecture lecture, Long lectureId) {
-        if (lecture == null) {
-            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build();
-        }
-
-        if (!Objects.equals(lecture.getSection().getId(), sectionId)) {
-            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(), sectionId)
                     .build();
         }
     }

@@ -1,7 +1,7 @@
 package com.example.projectlxp.model.lecture;
 
-import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
+import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.model.section.Section;
 import jakarta.persistence.*;
 
@@ -138,7 +138,6 @@ public class Lecture {
         }
     }
 
-
     public boolean getStatus() {
         return status;
     }
@@ -147,7 +146,7 @@ public class Lecture {
         return deletedAt;
     }
 
-    // Getters and Setters
+    // Getters
     public Long getId() {
         return id;
     }
@@ -160,11 +159,9 @@ public class Lecture {
         return section;
     }
 
-
     public String getTitle() {
         return title;
     }
-
 
     public String getDescription() {
         return description;
@@ -173,7 +170,6 @@ public class Lecture {
     public Integer getSortOrder() {
         return sortOrder;
     }
-
 
     public LectureType getType() {
         return type;

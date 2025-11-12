@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class SectionServiceImpl implements SectionService {
@@ -91,39 +92,34 @@ public class SectionServiceImpl implements SectionService {
         Map<Long, Section> sectionMap = sectionsInDb.stream()
                 .collect(Collectors.toMap(Section::getId, Function.identity()));
 
-        // --- 검증 로직 시작 ---
-
-        // 1. 요청된 sectionIds의 개수와 DB에 있는 섹션의 개수가 일치하는지 확인
-        if (sectionMap.size() != sectionIds.size()) {
-            throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                    .withField(String.format("The number of sections does not match. Expected: %d, Actual: %d", sectionMap.size(), sectionIds.size()))
-                    .build();
-        }
-
-        // 2. 요청된 sectionIds에 중복이 있는지, 그리고 DB에 있는 모든 섹션 ID를 포함하는지 확인
         Set<Long> dbSectionIds = sectionMap.keySet();
         Set<Long> requestSectionIds = new HashSet<>(sectionIds);
 
-        if (requestSectionIds.size() != sectionIds.size()) {
-            throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                    .withField("Duplicate section IDs are not allowed.")
-                    .build();
-        }
-
         if (!dbSectionIds.equals(requestSectionIds)) {
             throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                    .withField("The provided section IDs do not match the sections in the course.")
                     .build();
         }
 
-        // --- 검증 로직 끝 ---
+        IntStream.range(0, sectionIds.size())
+                .forEach(i -> {
+                    Section section = sectionMap.get(sectionIds.get(i));
+                    section.update(section.getTitle(), i + 1);
+                });
+    }
 
-        // 순서 업데이트 로직
-        for (int i = 0; i < sectionIds.size(); i++) {
-            Long sectionId = sectionIds.get(i);
-            Section section = sectionMap.get(sectionId);
-            // 위에서 모든 ID가 유효함을 검증했으므로 section은 항상 존재함
-            section.update(section.getTitle(), i + 1);
+    private Section findSectionWithCourse(Long sectionId) {
+        return sectionRepository.findByIdWithCourse(sectionId)
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build());
+    }
+
+    private void validateInstructorAccess(Section section, Long courseId, Long userId) {
+        Course course = section.getCourse();
+        if (!course.isOwnedBy(userId)) {
+            throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
+                    .withId(userId, courseId)
+                    .build();
         }
     }
 
