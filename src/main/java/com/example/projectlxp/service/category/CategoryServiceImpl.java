@@ -55,10 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
             .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(id).build());
 
-        // 이름이 변경되었을 경우에만 중복 검사를 수행
-        if (!category.getName().equals(dto.name())) {
-            validateNameIsUnique(dto.name());
-        }
+        validateNameOnUpdate(category, dto.name());
 
         category.update(dto.name());
         return new CategoryServiceDto(category.getId(), category.getName());
@@ -73,6 +70,18 @@ public class CategoryServiceImpl implements CategoryService {
             .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(categoryId).build());
 
         categoryRepository.delete(category);
+    }
+
+    /**
+     * 카테고리 수정 시 이름의 유효성을 검증하는 헬퍼 메소드
+     * @param category 수정할 대상 카테고리 엔티티
+     * @param newName 새로운 카테고리 이름
+     */
+    private void validateNameOnUpdate(Category category, String newName) {
+        // 이름이 변경되었을 경우에만 중복 검사를 수행
+        if (!category.getName().equals(newName)) {
+            validateNameIsUnique(newName);
+        }
     }
 
     /**
