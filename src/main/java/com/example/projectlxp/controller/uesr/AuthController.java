@@ -29,3 +29,11 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
+
+    // 로그인
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
+
+        return authService.login(loginRequest);
+    }
+}

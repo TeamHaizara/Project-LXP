@@ -49,3 +49,26 @@ public class SecurityConfig {
         // http basic 인증 방식 비활성화
         http
                 .httpBasic((auth) -> auth.disable());
+
+        // 역할벌 인가
+        http
+                .authorizeHttpRequests((auth)
+                        -> auth
+                        .requestMatchers("/api/auth/login", "/", "/api/auth/join").permitAll()
+                        .anyRequest().authenticated());
+
+        // UsernamePasswordAuthenticationFilter 커스텀 필터 등록
+        http
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)
+                        , jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
+        // 세션 설정
+        http
+                .sessionManagement((session)
+                        -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+
+        return http.build();
+    }
+}
