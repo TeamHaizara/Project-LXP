@@ -26,14 +26,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryServiceDto createCategory(CategoryServiceDto dto) {
-        // 카테고리 이름 중복 검사
-        if (categoryRepository.existsByName(dto.name())) {
-            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME)
-                .withField(dto.name())
-                .build();
-        }
+        validateNameIsUnique(dto.name());
 
-        // DTO에서 toEntity 메소드를 사용하여 엔티티 생성
         Category savedCategory = categoryRepository.save(dto.toEntity());
 
         return new CategoryServiceDto(savedCategory.getId(), savedCategory.getName());
@@ -61,31 +55,47 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
             .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(id).build());
 
-        // 이름이 변경되었고, 변경된 이름이 이미 존재하면 예외 발생
-        if (!category.getName().equals(dto.name()) && categoryRepository.existsByName(dto.name())) {
-            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME)
-                .withField(dto.name())
-                .build();
+        // 이름이 변경되었을 경우에만 중복 검사를 수행
+        if (!category.getName().equals(dto.name())) {
+            validateNameIsUnique(dto.name());
         }
 
         category.update(dto.name());
-        // 변경 감지(Dirty Checking)에 의해 트랜잭션 종료 시 자동으로 update 쿼리가 실행됩니다.
         return new CategoryServiceDto(category.getId(), category.getName());
     }
 
     @Override
     @Transactional
     public void deleteCategory(Long categoryId) {
-        // 해당 카테고리에 속한 강좌가 있는지 확인
-        if (!courseRepository.findByCategoryIdAndNotDeleted(categoryId).isEmpty()) {
-            throw BusinessException.builder(ExceptionCode.CATEGORY_HAS_COURSES)
-                .withId(categoryId)
-                .build();
-        }
+        validateCategoryHasNoCourses(categoryId);
 
         Category category = categoryRepository.findById(categoryId)
             .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(categoryId).build());
 
         categoryRepository.delete(category);
+    }
+
+    /**
+     * 카테고리 이름이 중복되는지 검증하는 헬퍼 메소드
+     * @param name 검증할 카테고리 이름
+     */
+    private void validateNameIsUnique(String name) {
+        if (categoryRepository.existsByName(name)) {
+            throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME)
+                .withField(name)
+                .build();
+        }
+    }
+
+    /**
+     * 카테고리에 속한 강좌가 없는지 검증하는 헬퍼 메소드
+     * @param categoryId 검증할 카테고리 ID
+     */
+    private void validateCategoryHasNoCourses(Long categoryId) {
+        if (!courseRepository.findByCategoryIdAndNotDeleted(categoryId).isEmpty()) {
+            throw BusinessException.builder(ExceptionCode.CATEGORY_HAS_COURSES)
+                .withId(categoryId)
+                .build();
+        }
     }
 }
