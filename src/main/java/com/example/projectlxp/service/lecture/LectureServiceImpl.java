@@ -10,12 +10,10 @@ import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
+import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
 import com.example.projectlxp.repository.lecture.LectureRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
 import com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +21,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,10 +30,13 @@ public class LectureServiceImpl implements LectureService {
 
     private final LectureRepository lectureRepository;
     private final SectionRepository sectionRepository;
+    private final EnrolledCourseRepository enrolledCourseRepository;
 
-    public LectureServiceImpl(LectureRepository lectureRepository, SectionRepository sectionRepository) {
+    public LectureServiceImpl(LectureRepository lectureRepository, SectionRepository sectionRepository,
+                              EnrolledCourseRepository enrolledCourseRepository) {
         this.lectureRepository = lectureRepository;
         this.sectionRepository = sectionRepository;
+        this.enrolledCourseRepository = enrolledCourseRepository;
     }
 
     // 렉처 생성
@@ -72,16 +75,33 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 조회 (ID)
-    public LectureResponse getLectureById(Long lectureId) {
+    public LectureResponse getLectureById(Long lectureId, Long userId) {
+        Course course = lectureRepository.findCourseByLectureId(lectureId).orElseThrow(
+                () -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_COURSE).withId(lectureId)
+                        .build());
+
+        validateEnrolled(userId, course.getId());
+
         Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
+                .orElseThrow(
+                        () -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId)
+                                .build());
+
         return LectureResponse.from(lecture);
+    }
+
+    private void validateEnrolled(Long userId, Long courseId) {
+        if (!enrolledCourseRepository.existsByUserIdAndCourseId(userId, courseId)) {
+            throw BusinessException.builder(LectureServiceErrorCode.NOT_ENROLLED_COURSE).withId(userId, courseId).build();
+        }
     }
 
     // 특정 섹션의 모든 렉처 조회
     public LectureListResponse getLecturesBySection(Long sectionId) {
         sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
+                .orElseThrow(
+                        () -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId)
+                                .build());
 
         return new LectureListResponse(lectureRepository.findBySectionIdAsc(sectionId).stream()
                 .map(LectureResponse::from)
@@ -91,7 +111,9 @@ public class LectureServiceImpl implements LectureService {
     // 미리보기 가능한 렉처 조회
     public LectureListResponse getPreviewableLecturesBySection(Long sectionId) {
         sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
+                .orElseThrow(
+                        () -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId)
+                                .build());
 
         return new LectureListResponse(lectureRepository.findBySectionIdPreviewableTrueAsc(sectionId).stream()
                 .map(LectureResponse::from)
@@ -101,7 +123,9 @@ public class LectureServiceImpl implements LectureService {
     // 특정 타입의 렉처 조회
     public LectureListResponse getLecturesBySectionAndType(Long sectionId, LectureType type) {
         sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
+                .orElseThrow(
+                        () -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId)
+                                .build());
 
         return new LectureListResponse(lectureRepository.findBySectionIdAndTypeAsc(sectionId, type).stream()
                 .map(LectureResponse::from)
@@ -111,7 +135,8 @@ public class LectureServiceImpl implements LectureService {
     // 렉처 수정
     @Override
     @Transactional
-    public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO, Long userId) {
+    public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO,
+                                         Long userId) {
         Lecture lecture = findLectureWithRelations(lectureId);
         validateInstructorAccess(lecture, userId);
         validateLectureHierarchy(lecture, courseId, sectionId);

@@ -82,7 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
     private void validateNameOnUpdate(Category category, String newName) {
         // 이름이 변경되었을 경우에만 중복 검사를 수행
         if (category.getName().equals(newName)) {
-            throw BusinessException.builder(ExceptionCode.CATEGORY_NAME_EQUALS_PRIVIES)
+            throw BusinessException.builder(ExceptionCode.CATEGORY_NAME_UNCHANGED)
                 .withField(newName)
                 .build();
 
