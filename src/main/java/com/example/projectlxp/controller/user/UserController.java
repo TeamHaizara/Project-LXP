@@ -3,7 +3,7 @@ package com.example.projectlxp.controller.user;
 import com.example.projectlxp.controller.user.dto.request.UserRequest;
 import com.example.projectlxp.controller.user.dto.response.UserResponse;
 import com.example.projectlxp.service.user.UserService;
-import com.example.projectlxp.model.user.CustomUserDetails;
+import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
