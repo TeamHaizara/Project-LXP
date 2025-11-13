@@ -12,7 +12,7 @@ public interface LectureService {
     LectureResponse createLecture(Long courseId, Long sectionId, LectureCreateRequest requestDTO, Long userId);
 
     // 렉처 조회 (ID)
-    LectureResponse getLectureById(Long id,Long userId);
+    LectureResponse getLectureById(Long lectureId,Long userId);
 
     // 특정 섹션의 모든 렉처 조회
     LectureListResponse getLecturesBySection(Long sectionId);
