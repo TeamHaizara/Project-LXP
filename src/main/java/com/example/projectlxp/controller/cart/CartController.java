@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/learner")
+@RequestMapping("/api/learner/cart")
 public class CartController {
 
     private final CartService cartService;
@@ -27,7 +27,7 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PostMapping("/cart")
+    @PostMapping
     public ResponseEntity<Void> addCart(
             @Valid @RequestBody CartAddRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -37,13 +37,13 @@ public class CartController {
     }
 
 
-    @GetMapping("/cart")
+    @GetMapping
     public ResponseEntity<CartListResponse> getCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
         CartItems carts = cartService.getAllCartItems(userDetails.getUserId());
         return ResponseEntity.ok(CartListResponse.from(carts));
     }
 
-    @DeleteMapping("/cart")
+    @DeleteMapping
     public ResponseEntity<Void> deleteCart(
             @Valid @RequestBody CartDeleteRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -52,7 +52,7 @@ public class CartController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/cart/all")
+    @DeleteMapping("/all")
     public ResponseEntity<Void> deleteAllCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
         cartService.deleteAllCart(userDetails.getUserId());
         return ResponseEntity.noContent().build();

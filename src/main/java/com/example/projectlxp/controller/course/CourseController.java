@@ -13,15 +13,23 @@ import com.example.projectlxp.controller.section.response.SectionResponse;
 import com.example.projectlxp.service.course.CourseService;
 import com.example.projectlxp.service.course.dto.CourseSearchCriteria;
 import com.example.projectlxp.service.lecture.LectureService;
+import com.example.projectlxp.service.lecture.dto.LectureUpdateDto;
 import com.example.projectlxp.service.section.SectionService;
 import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
@@ -61,7 +69,6 @@ public class CourseController {
         CourseDetailResponse response = courseService.getCourseById(courseId);
         return ResponseEntity.ok(response);
     }
-
 
     // ========== Course Management APIs ==========
 
@@ -146,7 +153,8 @@ public class CourseController {
             @Valid @RequestBody SectionUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        SectionResponse response = sectionService.updateSection(courseId, sectionId, request.toDto(), userDetails.getUserId());
+        SectionResponse response = sectionService.updateSection(courseId, sectionId, request.toDto(),
+                userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -195,7 +203,8 @@ public class CourseController {
             @Valid @RequestBody LectureUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        LectureResponse response = lectureService.updateLecture(courseId, sectionId, lectureId, request, userDetails.getUserId());
+        LectureResponse response = lectureService.updateLecture(
+                LectureUpdateDto.from(courseId, sectionId, lectureId, request, userDetails.getUserId()));
         return ResponseEntity.ok(response);
     }
 

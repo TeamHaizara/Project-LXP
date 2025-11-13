@@ -1,10 +1,10 @@
 package com.example.projectlxp.service.lecture;
 
 import com.example.projectlxp.controller.lecture.request.LectureCreateRequest;
-import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
 import com.example.projectlxp.model.lecture.LectureType;
+import com.example.projectlxp.service.lecture.dto.LectureUpdateDto;
 import java.util.List;
 
 public interface LectureService {
@@ -24,7 +24,7 @@ public interface LectureService {
     LectureListResponse getLecturesBySectionAndType(Long sectionId, LectureType type);
 
     // 렉처 수정
-    LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO, Long userId);
+    LectureResponse updateLecture(LectureUpdateDto updateDto);
 
     // 렉처 삭제 (Soft Delete)
     void deleteLecture(Long courseId, Long sectionId, Long lectureId, Long userId);

@@ -1,7 +1,6 @@
 package com.example.projectlxp.service.lecture;
 
 import com.example.projectlxp.controller.lecture.request.LectureCreateRequest;
-import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
 import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
 import com.example.projectlxp.exception.BusinessException;
@@ -13,6 +12,7 @@ import com.example.projectlxp.model.section.Section;
 import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
 import com.example.projectlxp.repository.lecture.LectureRepository;
 import com.example.projectlxp.repository.section.SectionRepository;
+import com.example.projectlxp.service.lecture.dto.LectureUpdateDto;
 import com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode;
 import java.util.HashSet;
 import java.util.List;
@@ -135,20 +135,19 @@ public class LectureServiceImpl implements LectureService {
     // 렉처 수정
     @Override
     @Transactional
-    public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO,
-                                         Long userId) {
-        Lecture lecture = findLectureWithRelations(lectureId);
-        validateInstructorAccess(lecture, userId);
-        validateLectureHierarchy(lecture, courseId, sectionId);
+    public LectureResponse updateLecture(LectureUpdateDto updateDto) {
+        Lecture lecture = findLectureWithRelations(updateDto.lectureId());
+        validateInstructorAccess(lecture, updateDto.userId());
+        validateLectureHierarchy(lecture, updateDto.courseId(), updateDto.sectionId());
 
         lecture.updateDetails(
-                requestDTO.getTitle(),
-                requestDTO.getDescription(),
-                requestDTO.getOrder(),
-                requestDTO.getType(),
-                requestDTO.getResourcePath(),
-                requestDTO.getDuration(),
-                requestDTO.getIsPreviewable()
+                updateDto.requestDTO().getTitle(),
+                updateDto.requestDTO().getDescription(),
+                updateDto.requestDTO().getOrder(),
+                updateDto.requestDTO().getType(),
+                updateDto.requestDTO().getResourcePath(),
+                updateDto.requestDTO().getDuration(),
+                updateDto.requestDTO().getPreviewable()
         );
 
         Lecture updatedLecture = lectureRepository.save(lecture);
