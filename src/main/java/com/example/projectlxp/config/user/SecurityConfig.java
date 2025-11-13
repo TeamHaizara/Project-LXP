@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-            throws Exception {
+        throws Exception {
 
         return configuration.getAuthenticationManager();
     }
@@ -43,32 +43,34 @@ public class SecurityConfig {
 
         // csrf 비활성화
         http
-                .csrf((auth) -> auth.disable());
+            .csrf((auth) -> auth.disable());
 
         // form로그인 방식 비활성화
         http
-                .formLogin((auth) -> auth.disable());
+            .formLogin((auth) -> auth.disable());
 
         // http basic 인증 방식 비활성화
         http
-                .httpBasic((auth) -> auth.disable());
+            .httpBasic((auth) -> auth.disable());
 
         // 역할벌 인가
         http
-                .authorizeHttpRequests((auth)
-                        -> auth
-                        .requestMatchers("/api/auth/login", "/", "/api/auth/join").permitAll()
-                        .anyRequest().authenticated());
+            .authorizeHttpRequests((auth)
+                -> auth
+                .requestMatchers("/api/auth/login", "/", "/api/auth/join").permitAll()
+                .requestMatchers("/api/instructor/**").hasRole("INSTRUCTOR")
+                .requestMatchers("/api/learner/**").hasRole("LEARNER")
+                .anyRequest().authenticated());
 
         // JwtFilter 등록
         http
-                .addFilterBefore(new JwtFilter(jwtUtil,userDetailsService ), LoginFilter.class);
+            .addFilterBefore(new JwtFilter(jwtUtil, userDetailsService), LoginFilter.class);
 
         // 세션 설정
         http
-                .sessionManagement((session)
-                        -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .sessionManagement((session)
+                -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

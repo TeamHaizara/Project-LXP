@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "users") // 테이블 이름을 'users'로 변경
 public class User {
 
     @Id
@@ -35,7 +36,8 @@ public class User {
     private LocalDateTime deletedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_roles_user_id"))) // 외래 키 이름 지정
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private List<Role> roles = new ArrayList<>();

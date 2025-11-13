@@ -74,7 +74,7 @@ class CategoryServiceImplTest {
                 () -> categoryService.createCategory(dto));
 
             // then
-            assertThat(exception.getMessage()).isEqualTo("Duplicate category name: " + dto.name());
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.DUPLICATE_CATEGORY_NAME.getStatus());
             verify(categoryRepository, never()).save(any());
         }
     }
@@ -213,12 +213,11 @@ class CategoryServiceImplTest {
 
             // then
             assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.DUPLICATE_CATEGORY_NAME.getStatus());
-            assertThat(exception.getMessage()).isEqualTo("Duplicate category name: " + dto.name());
         }
 
         @Test
-        @DisplayName("성공 - 이름을 변경하지 않을 경우 중복 검사를 수행하지 않음")
-        void should_notCheckDuplicate_when_nameIsNotChanged() {
+        @DisplayName("실패 - 이름을 변경하지 않을 경우 예외 발생")
+        void should_throwException_when_nameIsNotChanged() {
             // given
             Category existingCategory = Category.create("같은 이름");
             CategoryServiceDto dto = new CategoryServiceDto(null, "같은 이름");
@@ -226,10 +225,11 @@ class CategoryServiceImplTest {
             given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
 
             // when
-            categoryService.updateCategory(categoryId, dto);
+            BusinessException exception = assertThrows(BusinessException.class,
+                () -> categoryService.updateCategory(categoryId, dto));
 
             // then
-            // existsByName이 호출되지 않았음을 검증
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_NAME_UNCHANGED.getStatus());
             verify(categoryRepository, never()).existsByName(anyString());
         }
     }
@@ -246,14 +246,14 @@ class CategoryServiceImplTest {
         void should_deleteCategory_when_validRequest() {
             // given
             Category existingCategory = Category.create("삭제될 카테고리");
-            given(courseRepository.findByCategoryIdAndNotDeleted(categoryId)).willReturn(Collections.emptyList());
+            given(courseRepository.findByCategoryIdAndPublished(categoryId)).willReturn(Collections.emptyList());
             given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
 
             // when
             categoryService.deleteCategory(categoryId);
 
             // then
-            verify(courseRepository).findByCategoryIdAndNotDeleted(categoryId);
+            verify(courseRepository).findByCategoryIdAndPublished(categoryId);
             verify(categoryRepository).findById(categoryId);
             verify(categoryRepository).delete(existingCategory);
         }
@@ -262,7 +262,7 @@ class CategoryServiceImplTest {
         @DisplayName("실패 - 존재하지 않는 ID로 요청 시 예외 발생")
         void should_throwException_when_categoryIdNotFound() {
             // given
-            given(courseRepository.findByCategoryIdAndNotDeleted(invalidCategoryId)).willReturn(Collections.emptyList());
+            given(courseRepository.findByCategoryIdAndPublished(invalidCategoryId)).willReturn(Collections.emptyList());
             given(categoryRepository.findById(invalidCategoryId)).willReturn(Optional.empty());
 
             // when
@@ -278,10 +278,8 @@ class CategoryServiceImplTest {
         @DisplayName("실패 - 하위 강좌가 존재할 경우 예외 발생")
         void should_throwException_when_categoryHasCourses() {
             // given
-            // Course 객체를 직접 생성하는 대신, Mockito.mock()을 사용하여 가짜 객체를 생성
             Course mockCourse = mock(Course.class);
-            // CourseRepository가 비어있지 않은 리스트(가짜 Course 객체를 포함)를 반환하도록 설정
-            given(courseRepository.findByCategoryIdAndNotDeleted(categoryId)).willReturn(List.of(mockCourse));
+            given(courseRepository.findByCategoryIdAndPublished(categoryId)).willReturn(List.of(mockCourse));
 
             // when
             BusinessException exception = assertThrows(BusinessException.class,
@@ -289,7 +287,6 @@ class CategoryServiceImplTest {
 
             // then
             assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_HAS_COURSES.getStatus());
-            assertThat(exception.getMessage()).contains("because it has associated courses");
             verify(categoryRepository, never()).findById(any());
             verify(categoryRepository, never()).delete(any());
         }

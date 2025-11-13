@@ -27,9 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryServiceDto createCategory(CategoryServiceDto dto) {
         validateNameIsUnique(dto.name());
-
         Category savedCategory = categoryRepository.save(dto.toEntity());
-
         return new CategoryServiceDto(savedCategory.getId(), savedCategory.getName());
     }
 
@@ -51,11 +49,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryServiceDto updateCategory(Long id, CategoryServiceDto dto) {
-        Category category = categoryRepository.findById(id)
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(id).build());
+    public CategoryServiceDto updateCategory(Long categoryId, CategoryServiceDto dto) {
+        Category category = categoryRepository.findById(categoryId)
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.CATEGORY_NOT_FOUND).withId(categoryId).build());
 
-        validateNameIsUnique(dto.name());
         validateNameOnUpdate(category, dto.name());
 
         category.update(dto.name());
@@ -73,27 +70,16 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(category);
     }
 
-    /**
-     * 카테고리 수정 시 이름의 유효성을 검증하는 헬퍼 메소드
-     *
-     * @param category 수정할 대상 카테고리 엔티티
-     * @param newName  새로운 카테고리 이름
-     */
     private void validateNameOnUpdate(Category category, String newName) {
-        // 이름이 변경되었을 경우에만 중복 검사를 수행
         if (category.getName().equals(newName)) {
             throw BusinessException.builder(ExceptionCode.CATEGORY_NAME_UNCHANGED)
                 .withField(newName)
                 .build();
-
         }
+        // 이름이 변경되었을 경우에만 중복 검사를 수행
+        validateNameIsUnique(newName);
     }
 
-    /**
-     * 카테고리 이름이 중복되는지 검증하는 헬퍼 메소드
-     *
-     * @param name 검증할 카테고리 이름
-     */
     private void validateNameIsUnique(String name) {
         if (categoryRepository.existsByName(name)) {
             throw BusinessException.builder(ExceptionCode.DUPLICATE_CATEGORY_NAME)
@@ -102,11 +88,6 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    /**
-     * 카테고리에 속한 강좌가 없는지 검증하는 헬퍼 메소드
-     *
-     * @param categoryId 검증할 카테고리 ID
-     */
     private void validateCategoryHasNoCourses(Long categoryId) {
         if (!courseRepository.findByCategoryIdAndPublished(categoryId).isEmpty()) {
             throw BusinessException.builder(ExceptionCode.CATEGORY_HAS_COURSES)
