@@ -1,14 +1,23 @@
 package com.example.projectlxp.model.lecture;
 
-import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
-import com.example.projectlxp.exception.BusinessException;
-import com.example.projectlxp.model.section.Section;
-import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
-
 import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.LECTURE_ALREADY_DELETED;
 import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.ORDER_NUMBER_UNDER_ZERO;
+
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.model.section.Section;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -45,7 +54,7 @@ public class Lecture {
     private boolean previewable = false;
 
     @Column(nullable = false)
-    private boolean status = false;
+    private boolean status = true;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -89,7 +98,7 @@ public class Lecture {
 
     // Soft delete method
     public void softDelete() {
-        this.status = true;
+        this.status = false;
         this.deletedAt = LocalDateTime.now();
     }
 
