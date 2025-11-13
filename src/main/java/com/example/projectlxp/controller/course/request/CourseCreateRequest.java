@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public class CourseCreateRequest {
 
-    @NotNull(message = "강사 ID는 필수입니다.")
-    private Long instructorId;
-
     @NotNull(message = "카테고리 ID는 필수입니다.")
     private Long categoryId;
 
@@ -21,7 +18,6 @@ public class CourseCreateRequest {
 
     // Constructors
     public CourseCreateRequest(Long instructorId, Long categoryId, String title, String description, Integer price) {
-        this.instructorId = instructorId;
         this.categoryId = categoryId;
         this.title = title;
         this.description = description;
@@ -29,10 +25,6 @@ public class CourseCreateRequest {
     }
 
     // Getters
-    public Long getInstructorId() {
-        return instructorId;
-    }
-
     public Long getCategoryId() {
         return categoryId;
     }

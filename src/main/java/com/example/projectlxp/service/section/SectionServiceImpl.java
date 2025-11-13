@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class SectionServiceImpl implements SectionService {
@@ -30,11 +31,13 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionResponse createSection(SectionServiceDto dto) {
+    public SectionResponse createSection(SectionServiceDto dto, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(dto.courseId())
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(dto.courseId())
                         .build());
+
+        validateInstructorAccess(course, userId);
 
         // 섹션 순서(order) 중복 검증
         if (sectionRepository.existsByCourseIdAndOrderAndDeletedAtIsNull(dto.courseId(), dto.order())) {
@@ -51,13 +54,9 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
-                        .withId(sectionId)
-                        .build());
-
-        // courseId 일치 검증
+    public SectionResponse updateSection(Long courseId, Long sectionId, SectionServiceDto dto, Long userId) {
+        Section section = findSectionWithRelations(sectionId); // FETCH JOINED
+        validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         // 섹션 순서(order)를 변경하는 경우에만 중복 검증
@@ -75,13 +74,9 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public void deleteSection(Long courseId, Long sectionId) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
-                        .withId(sectionId)
-                        .build());
-
-        // courseId 일치 검증
+    public void deleteSection(Long courseId, Long sectionId, Long userId) {
+        Section section = findSectionWithRelations(sectionId); // FETCH JOINED
+        validateInstructorAccess(section, userId);
         validateSectionBelongsToCourse(section, courseId);
 
         section.cascadeSoftDelete();
@@ -89,50 +84,50 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     @Transactional
-    public void reorderSections(Long courseId, List<Long> sectionIds) {
-        courseRepository.findByIdAndNotDeleted(courseId)
+    public void reorderSections(Long courseId, List<Long> sectionIds, Long userId) {
+        Course course = courseRepository.findByIdWithSectionsForManage(courseId) // FETCH JOINED
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(courseId)
                         .build());
 
-        List<Section> sectionsInDb = sectionRepository.findByCourseIdAndNotDeleted(courseId);
+        validateInstructorAccess(course, userId);
+
+        List<Section> sectionsInDb = course.getSections();
         Map<Long, Section> sectionMap = sectionsInDb.stream()
                 .collect(Collectors.toMap(Section::getId, Function.identity()));
-
-        // --- 검증 로직 시작 ---
-
-        // 1. 요청된 sectionIds의 개수와 DB에 있는 섹션의 개수가 일치하는지 확인
-        if (sectionMap.size() != sectionIds.size()) {
-            throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                    .withField(String.format("The number of sections does not match. Expected: %d, Actual: %d", sectionMap.size(), sectionIds.size()))
-                    .build();
-        }
-
-        // 2. 요청된 sectionIds에 중복이 있는지, 그리고 DB에 있는 모든 섹션 ID를 포함하는지 확인
         Set<Long> dbSectionIds = sectionMap.keySet();
         Set<Long> requestSectionIds = new HashSet<>(sectionIds);
 
-        if (requestSectionIds.size() != sectionIds.size()) {
-            throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                    .withField("Duplicate section IDs are not allowed.")
-                    .build();
-        }
-
         if (!dbSectionIds.equals(requestSectionIds)) {
             throw BusinessException.builder(ExceptionCode.INVALID_SECTION_REORDER_REQUEST)
-                    .withField("The provided section IDs do not match the sections in the course.")
                     .build();
         }
 
-        // --- 검증 로직 끝 ---
+        IntStream.range(0, sectionIds.size())
+                .forEach(i -> {
+                    Section section = sectionMap.get(sectionIds.get(i));
+                    section.update(section.getTitle(), i + 1);
+                });
+    }
 
-        // 순서 업데이트 로직
-        for (int i = 0; i < sectionIds.size(); i++) {
-            Long sectionId = sectionIds.get(i);
-            Section section = sectionMap.get(sectionId);
-            // 위에서 모든 ID가 유효함을 검증했으므로 section은 항상 존재함
-            section.update(section.getTitle(), i + 1);
+    private Section findSectionWithRelations(Long sectionId) {
+        return sectionRepository.findByIdWithCourse(sectionId)
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build());
+    }
+
+    private void validateInstructorAccess(Course course, Long userId) {
+        if (!course.isOwnedBy(userId)) {
+            throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
+                    .withId(userId, course.getId())
+                    .build();
         }
+    }
+
+    private void validateInstructorAccess(Section section, Long userId) {
+        Course course = section.getCourse();
+        validateInstructorAccess(course, userId);
     }
 
     private void validateSectionBelongsToCourse(Section section, Long expectedCourseId) {
