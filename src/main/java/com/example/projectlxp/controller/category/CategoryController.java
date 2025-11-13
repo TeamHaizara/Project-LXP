@@ -4,15 +4,17 @@ import com.example.projectlxp.controller.category.request.CategoryRequest;
 import com.example.projectlxp.controller.category.response.CategoryResponse;
 import com.example.projectlxp.service.category.CategoryService;
 import com.example.projectlxp.service.category.dto.CategoryServiceDto;
+import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api") // 기본 경로를 /api로 변경
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -21,43 +23,48 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @PostMapping
-    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request) {
-        // Service 계층을 호출하여 CategoryServiceDto를 받음
-        CategoryServiceDto createdCategoryDto = categoryService.createCategory(request.toDto());
-        // CategoryServiceDto를 CategoryResponse로 변환하여 클라이언트에 반환
+    // 강사 전용 API
+    @PostMapping("/instructor/categories")
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request,
+                                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+        CategoryServiceDto createdCategoryDto = categoryService.createCategory(request.toDto(), userDetails.getUserId());
         CategoryResponse response = CategoryResponse.from(createdCategoryDto);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    // 모든 사용자용 API
+    @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        // Service 계층을 호출하여 CategoryServiceDto 리스트를 받음
         List<CategoryServiceDto> categoryDtos = categoryService.getAllCategories();
-        // CategoryServiceDto 리스트를 CategoryResponse 리스트로 변환
         List<CategoryResponse> responses = categoryDtos.stream()
             .map(CategoryResponse::from)
             .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/{id}")
+    // 모든 사용자용 API
+    @GetMapping("/categories/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
         CategoryServiceDto categoryDto = categoryService.getCategoryById(id);
         CategoryResponse response = CategoryResponse.from(categoryDto);
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
-        CategoryServiceDto updatedDto = categoryService.updateCategory(id, request.toDto());
+    // 강사 전용 API
+    @PutMapping("/instructor/categories/{id}")
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
+                                                           @Valid @RequestBody CategoryRequest request,
+                                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+        CategoryServiceDto updatedDto = categoryService.updateCategory(id, request.toDto(), userDetails.getUserId());
         CategoryResponse response = CategoryResponse.from(updatedDto);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        categoryService.deleteCategory(id);
+    // 강사 전용 API
+    @DeleteMapping("/instructor/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id,
+                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        categoryService.deleteCategory(id, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 }
