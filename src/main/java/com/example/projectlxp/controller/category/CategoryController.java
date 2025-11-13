@@ -4,10 +4,8 @@ import com.example.projectlxp.controller.category.request.CategoryRequest;
 import com.example.projectlxp.controller.category.response.CategoryResponse;
 import com.example.projectlxp.service.category.CategoryService;
 import com.example.projectlxp.service.category.dto.CategoryServiceDto;
-import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,9 +23,8 @@ public class CategoryController {
 
     // 강사 전용 API
     @PostMapping("/instructor/categories")
-    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request,
-                                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
-        CategoryServiceDto createdCategoryDto = categoryService.createCategory(request.toDto(), userDetails.getUserId());
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryRequest request) {
+        CategoryServiceDto createdCategoryDto = categoryService.createCategory(request.toDto());
         CategoryResponse response = CategoryResponse.from(createdCategoryDto);
         return ResponseEntity.ok(response);
     }
@@ -53,18 +50,16 @@ public class CategoryController {
     // 강사 전용 API
     @PutMapping("/instructor/categories/{id}")
     public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
-                                                           @Valid @RequestBody CategoryRequest request,
-                                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
-        CategoryServiceDto updatedDto = categoryService.updateCategory(id, request.toDto(), userDetails.getUserId());
+                                                           @Valid @RequestBody CategoryRequest request) {
+        CategoryServiceDto updatedDto = categoryService.updateCategory(id, request.toDto());
         CategoryResponse response = CategoryResponse.from(updatedDto);
         return ResponseEntity.ok(response);
     }
 
     // 강사 전용 API
     @DeleteMapping("/instructor/categories/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id,
-                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
-        categoryService.deleteCategory(id, userDetails.getUserId());
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
 }

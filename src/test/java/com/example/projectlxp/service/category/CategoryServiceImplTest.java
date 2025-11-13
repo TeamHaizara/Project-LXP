@@ -4,13 +4,9 @@ import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.category.Category;
 import com.example.projectlxp.model.course.Course;
-import com.example.projectlxp.model.user.Role;
-import com.example.projectlxp.model.user.User;
 import com.example.projectlxp.repository.category.CategoryRepository;
 import com.example.projectlxp.repository.course.CourseRepository;
-import com.example.projectlxp.repository.user.UserRepository;
 import com.example.projectlxp.service.category.dto.CategoryServiceDto;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,7 +22,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -39,22 +34,10 @@ class CategoryServiceImplTest {
     private CategoryRepository categoryRepository;
 
     @Mock
-    private CourseRepository courseRepository;
-
-    @Mock
-    private UserRepository userRepository; // UserRepository 목 추가
+    private CourseRepository courseRepository; // deleteCategory 테스트를 위해 필요
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
-
-    private final Long instructorId = 1L;
-    private User instructor;
-
-    @BeforeEach
-    void setUp() {
-        // 강사 역할을 가진 사용자 목 설정
-        instructor = new User("instructor@example.com", "password", "강사님", "Java", List.of(Role.ROLE_INSTRUCTOR));
-    }
 
     @Nested
     @DisplayName("카테고리 생성")
@@ -67,16 +50,14 @@ class CategoryServiceImplTest {
             CategoryServiceDto dto = new CategoryServiceDto(null, "새로운 카테고리");
             Category newCategory = Category.create(dto.name());
 
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(categoryRepository.existsByName(dto.name())).willReturn(false);
             given(categoryRepository.save(any(Category.class))).willReturn(newCategory);
 
             // when
-            CategoryServiceDto response = categoryService.createCategory(dto, instructorId);
+            CategoryServiceDto response = categoryService.createCategory(dto);
 
             // then
             assertThat(response.name()).isEqualTo("새로운 카테고리");
-            verify(userRepository).findById(instructorId);
             verify(categoryRepository).existsByName(dto.name());
             verify(categoryRepository).save(any(Category.class));
         }
@@ -86,40 +67,18 @@ class CategoryServiceImplTest {
         void should_throwException_when_categoryNameIsDuplicated() {
             // given
             CategoryServiceDto dto = new CategoryServiceDto(null, "중복된 이름");
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(categoryRepository.existsByName(dto.name())).willReturn(true);
 
             // when
             BusinessException exception = assertThrows(BusinessException.class,
-                () -> categoryService.createCategory(dto, instructorId));
+                () -> categoryService.createCategory(dto));
 
             // then
             assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.DUPLICATE_CATEGORY_NAME.getStatus());
             verify(categoryRepository, never()).save(any());
         }
-
-        @Test
-        @DisplayName("실패 - 강사 권한이 없을 경우 예외 발생")
-        void should_throwException_when_userIsNotInstructor() {
-            // given
-            Long learnerId = 2L;
-            User learner = new User("learner@example.com", "password", "수강생", "Java", List.of(Role.ROLE_LEARNER));
-            CategoryServiceDto dto = new CategoryServiceDto(null, "새로운 카테고리");
-
-            given(userRepository.findById(learnerId)).willReturn(Optional.of(learner));
-
-            // when
-            BusinessException exception = assertThrows(BusinessException.class,
-                () -> categoryService.createCategory(dto, learnerId));
-
-            // then
-            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.USER_NOT_AUTHORITY.getStatus());
-            verify(categoryRepository, never()).existsByName(anyString());
-            verify(categoryRepository, never()).save(any());
-        }
     }
 
-    // ... (getAllCategories, getCategoryById 테스트는 변경 없음)
     @Nested
     @DisplayName("모든 카테고리 조회")
     class GetAllCategories {
@@ -196,12 +155,12 @@ class CategoryServiceImplTest {
         }
     }
 
-
     @Nested
     @DisplayName("카테고리 수정")
     class UpdateCategory {
 
         private final Long categoryId = 1L;
+        private final Long invalidCategoryId = 99L;
 
         @Test
         @DisplayName("성공")
@@ -210,18 +169,32 @@ class CategoryServiceImplTest {
             Category existingCategory = Category.create("원본 이름");
             CategoryServiceDto dto = new CategoryServiceDto(null, "수정된 이름");
 
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
             given(categoryRepository.existsByName("수정된 이름")).willReturn(false);
 
             // when
-            CategoryServiceDto result = categoryService.updateCategory(categoryId, dto, instructorId);
+            CategoryServiceDto result = categoryService.updateCategory(categoryId, dto);
 
             // then
             assertThat(result.name()).isEqualTo("수정된 이름");
-            assertThat(existingCategory.getName()).isEqualTo("수정된 이름");
+            assertThat(existingCategory.getName()).isEqualTo("수정된 이름"); // 엔티티 상태 변경 검증
             verify(categoryRepository).findById(categoryId);
             verify(categoryRepository).existsByName("수정된 이름");
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 ID로 수정 요청 시 예외 발생")
+        void should_throwException_when_updatingNonExistentCategory() {
+            // given
+            CategoryServiceDto dto = new CategoryServiceDto(null, "수정된 이름");
+            given(categoryRepository.findById(invalidCategoryId)).willReturn(Optional.empty());
+
+            // when
+            BusinessException exception = assertThrows(BusinessException.class,
+                    () -> categoryService.updateCategory(invalidCategoryId, dto));
+
+            // then
+            assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_NOT_FOUND.getStatus());
         }
 
         @Test
@@ -231,13 +204,12 @@ class CategoryServiceImplTest {
             Category existingCategory = Category.create("원본 이름");
             CategoryServiceDto dto = new CategoryServiceDto(null, "이미 있는 이름");
 
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
             given(categoryRepository.existsByName("이미 있는 이름")).willReturn(true);
 
             // when
             BusinessException exception = assertThrows(BusinessException.class,
-                    () -> categoryService.updateCategory(categoryId, dto, instructorId));
+                    () -> categoryService.updateCategory(categoryId, dto));
 
             // then
             assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.DUPLICATE_CATEGORY_NAME.getStatus());
@@ -250,12 +222,11 @@ class CategoryServiceImplTest {
             Category existingCategory = Category.create("같은 이름");
             CategoryServiceDto dto = new CategoryServiceDto(null, "같은 이름");
 
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
 
             // when
             BusinessException exception = assertThrows(BusinessException.class,
-                () -> categoryService.updateCategory(categoryId, dto, instructorId));
+                () -> categoryService.updateCategory(categoryId, dto));
 
             // then
             assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_NAME_UNCHANGED.getStatus());
@@ -268,18 +239,18 @@ class CategoryServiceImplTest {
     class DeleteCategory {
 
         private final Long categoryId = 1L;
+        private final Long invalidCategoryId = 99L;
 
         @Test
         @DisplayName("성공")
         void should_deleteCategory_when_validRequest() {
             // given
             Category existingCategory = Category.create("삭제될 카테고리");
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(courseRepository.findByCategoryIdAndPublished(categoryId)).willReturn(Collections.emptyList());
             given(categoryRepository.findById(categoryId)).willReturn(Optional.of(existingCategory));
 
             // when
-            categoryService.deleteCategory(categoryId, instructorId);
+            categoryService.deleteCategory(categoryId);
 
             // then
             verify(courseRepository).findByCategoryIdAndPublished(categoryId);
@@ -288,16 +259,31 @@ class CategoryServiceImplTest {
         }
 
         @Test
+        @DisplayName("실패 - 존재하지 않는 ID로 요청 시 예외 발생")
+        void should_throwException_when_categoryIdNotFound() {
+            // given
+            given(courseRepository.findByCategoryIdAndPublished(invalidCategoryId)).willReturn(Collections.emptyList());
+            given(categoryRepository.findById(invalidCategoryId)).willReturn(Optional.empty());
+
+            // when
+            BusinessException exception = assertThrows(BusinessException.class,
+                () -> categoryService.deleteCategory(invalidCategoryId));
+
+            // then
+            assertThat(exception.getMessage()).isEqualTo("Category not found with id: " + invalidCategoryId);
+            verify(categoryRepository, never()).delete(any());
+        }
+
+        @Test
         @DisplayName("실패 - 하위 강좌가 존재할 경우 예외 발생")
         void should_throwException_when_categoryHasCourses() {
             // given
             Course mockCourse = mock(Course.class);
-            given(userRepository.findById(instructorId)).willReturn(Optional.of(instructor));
             given(courseRepository.findByCategoryIdAndPublished(categoryId)).willReturn(List.of(mockCourse));
 
             // when
             BusinessException exception = assertThrows(BusinessException.class,
-                () -> categoryService.deleteCategory(categoryId, instructorId));
+                () -> categoryService.deleteCategory(categoryId));
 
             // then
             assertThat(exception.getHttpStatus()).isEqualTo(ExceptionCode.CATEGORY_HAS_COURSES.getStatus());
