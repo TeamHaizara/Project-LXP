@@ -85,13 +85,13 @@ public class EnrolledCourseService {
 
     private User getUserBy(Long userId) {
         return userRepository.findById(userId)
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.USER_NOT_FOUND).withId(userId).build());
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.USER_NOT_FOUND).withId(userId).build());
     }
 
     private void validateCourseBelongsToUser(User user, Course course) {
         if (isOwner(user.getUserId(), course.getInstructorId())) {
             throw BusinessException.builder(ExceptionCode.COURSE_BELONGS_TO_USER).withId(
-                user.getUserId(),course.getId()
+                    user.getUserId(), course.getId()
             ).build();
         }
     }

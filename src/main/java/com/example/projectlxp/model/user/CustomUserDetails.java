@@ -1,6 +1,5 @@
-package com.example.projectlxp.service.user.dto;
+package com.example.projectlxp.model.user;
 
-import com.example.projectlxp.model.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -30,9 +29,9 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public String getUsername() {return user.getUsername();}
+    public String getUsername() { return user.getUsername(); }
 
-    public Long getUserId() {return user.getUserId();}
+    public Long getUserId() { return user.getUserId(); }
 
 
     @Override
