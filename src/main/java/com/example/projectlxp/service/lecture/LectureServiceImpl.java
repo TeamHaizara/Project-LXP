@@ -6,6 +6,7 @@ import com.example.projectlxp.controller.lecture.response.LectureListResponse;
 import com.example.projectlxp.controller.lecture.response.LectureResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
+import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.lecture.Lecture;
 import com.example.projectlxp.model.lecture.LectureType;
 import com.example.projectlxp.model.section.Section;
@@ -15,9 +16,11 @@ import com.example.projectlxp.service.lecture.exception.LectureServiceErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,16 +37,22 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 생성
+    @Override
     @Transactional
-    public LectureResponse createLecture(LectureCreateRequest requestDTO) {
-        Section section = sectionRepository.findByIdAndDeletedAtIsNull(requestDTO.getSectionId())
-                .orElseThrow(
-                        () -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(requestDTO.getSectionId()).build());
+    public LectureResponse createLecture(Long courseId, Long sectionId, LectureCreateRequest requestDTO, Long userId) {
+        Section section = sectionRepository.findByIdWithCourse(sectionId) // FETCH JOIN
+                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build()
+                );
+
+        validateInstructorAccess(section, userId);
+        validateSectionBelongsToCourse(section, courseId);
 
         // order가 지정되지 않으면 자동으로 마지막에 추가
         Integer order = requestDTO.getOrder();
         if (order == null) {
-            order = lectureRepository.findMaxOrderBySectionId(requestDTO.getSectionId())
+            order = lectureRepository.findMaxOrderBySectionId(sectionId)
                     .orElse(0) + 1;
         }
 
@@ -100,13 +109,12 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 수정
+    @Override
     @Transactional
-    public LectureResponse updateLecture(Long sectionId, Long lectureId, LectureUpdateRequest requestDTO) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
-
-        // sectionId 일치 검증
-        validateLectureBelongsToSection(lecture, sectionId);
+    public LectureResponse updateLecture(Long courseId, Long sectionId, Long lectureId, LectureUpdateRequest requestDTO, Long userId) {
+        Lecture lecture = findLectureWithRelations(lectureId);
+        validateInstructorAccess(lecture, userId);
+        validateLectureHierarchy(lecture, courseId, sectionId);
 
         lecture.updateDetails(
                 requestDTO.getTitle(),
@@ -123,61 +131,81 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 렉처 삭제 (Soft Delete)
+    @Override
     @Transactional
-    public void deleteLecture(Long sectionId, Long lectureId) {
-        Lecture lecture = lectureRepository.findByIdAndDeletedAtIsNull(lectureId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build());
-
-        // sectionId 일치 검증
-        validateLectureBelongsToSection(lecture, sectionId);
+    public void deleteLecture(Long courseId, Long sectionId, Long lectureId, Long userId) {
+        Lecture lecture = findLectureWithRelations(lectureId);
+        validateInstructorAccess(lecture, userId);
+        validateLectureHierarchy(lecture, courseId, sectionId);
 
         lecture.softDelete();
         lectureRepository.save(lecture);
     }
 
-    //섹션 아이디 내의 렉처 CASCADE 삭제 처리
-    @Transactional
-    public void deleteLecturesBySection(Long sectionId) {
-        sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
-
-        List<Lecture> lectureListBySection = lectureRepository.findBySectionIdAsc(sectionId);
-
-        if (lectureListBySection.isEmpty()) {
-            return;
-        }
-
-        lectureListBySection.forEach(Lecture::softDelete);
-        lectureRepository.saveAll(lectureListBySection);
-    }
-
     // 렉처 순서 변경
+    @Override
     @Transactional
-    public void reorderLectures(Long sectionId, List<Long> lectureIds) {
-        sectionRepository.findByIdAndDeletedAtIsNull(sectionId)
-                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND).withId(sectionId).build());
+    public void reorderLectures(Long courseId, Long sectionId, List<Long> lectureIds, Long userId) {
+        Section section = sectionRepository.findByIdWithCourseAndLectures(sectionId) // FETCH JOIN
+                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.SECTION_NOT_FOUND)
+                        .withId(sectionId)
+                        .build());
 
-        List<Lecture> lectures = lectureRepository.findAllByIdInAndStatusIsFalse(lectureIds);
+        validateInstructorAccess(section, userId);
+        validateSectionBelongsToCourse(section, courseId);
+        List<Lecture> lecturesInDb = section.getLectures();
+        Map<Long, Lecture> lectureMap = lecturesInDb.stream()
+                .collect(Collectors.toMap(Lecture::getId, Function.identity()));
 
-        Map<Long, Lecture> lectureMap = lectures.stream()
-                .collect(Collectors.toMap(Lecture::getId, lecture -> lecture));
+        Set<Long> dbLectureIds = lectureMap.keySet();
+        Set<Long> requestLectureIds = new HashSet<>(lectureIds);
+
+        if (!dbLectureIds.equals(requestLectureIds)) {
+            throw BusinessException.builder(ExceptionCode.INVALID_LECTURE_REORDER_REQUEST)
+                    .build();
+        }
 
         IntStream.range(0, lectureIds.size())
                 .forEach(i -> {
-                    Long lectureId = lectureIds.get(i);
-                    Lecture lecture = lectureMap.get(lectureId);
-
-                    validateReorderLecture(sectionId, lecture, lectureId);
+                    Lecture lecture = lectureMap.get(lectureIds.get(i));
+                    lecture.updateOrder(i + 1);
                 });
     }
 
-    private void validateReorderLecture(Long sectionId, Lecture lecture, Long lectureId) {
-        if (lecture == null) {
-            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND).withId(lectureId).build();
-        }
+    private Lecture findLectureWithRelations(Long lectureId) {
+        return lectureRepository.findByIdWithSectionAndCourse(lectureId) // FETCH JOIN
+                .orElseThrow(() -> BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_FOUND)
+                        .withId(lectureId)
+                        .build());
+    }
 
-        if (!Objects.equals(lecture.getSection().getId(), sectionId)) {
-            throw BusinessException.builder(LectureServiceErrorCode.LECTURE_NOT_INCLUDED_SECTION).withId(lecture.getId(), sectionId)
+    private void validateInstructorAccess(Course course, Long userId) {
+        if (!course.isOwnedBy(userId)) {
+            throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
+                    .withId(userId, course.getId())
+                    .build();
+        }
+    }
+
+    private void validateInstructorAccess(Section section, Long userId) {
+        Course course = section.getCourse();
+        validateInstructorAccess(course, userId);
+    }
+
+    private void validateInstructorAccess(Lecture lecture, Long userId) {
+        Course course = lecture.getSection().getCourse();
+        validateInstructorAccess(course, userId);
+    }
+
+    private void validateLectureHierarchy(Lecture lecture, Long courseId, Long sectionId) {
+        validateLectureBelongsToSection(lecture, sectionId);
+        validateSectionBelongsToCourse(lecture.getSection(), courseId);
+    }
+
+    private void validateSectionBelongsToCourse(Section section, Long expectedCourseId) {
+        if (!section.getCourse().getId().equals(expectedCourseId)) {
+            throw BusinessException.builder(ExceptionCode.SECTION_NOT_IN_COURSE)
+                    .withId(section.getId(), expectedCourseId)
                     .build();
         }
     }
@@ -189,5 +217,6 @@ public class LectureServiceImpl implements LectureService {
                     .build();
         }
     }
+
 
 }

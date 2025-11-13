@@ -25,9 +25,9 @@ public class EnrolledCourseService {
     private final UserRepository userRepository;
 
     public EnrolledCourseService(
-        EnrolledCourseRepository enrolledCourseRepository,
-        CourseRepository courseRepository,
-        PaymentService paymentService, UserRepository userRepository
+            EnrolledCourseRepository enrolledCourseRepository,
+            CourseRepository courseRepository,
+            PaymentService paymentService, UserRepository userRepository
     ) {
         this.enrolledCourseRepository = enrolledCourseRepository;
         this.courseRepository = courseRepository;
@@ -43,12 +43,12 @@ public class EnrolledCourseService {
         Course course = getCourseBy(dto.courseId());
 
         paymentService.pay(
-            new PaymentDto(
-                dto.userId(),
-                dto.courseId(),
-                BigDecimal.valueOf(course.getPrice()),
-                dto.paymentMethod()
-            )
+                new PaymentDto(
+                        dto.userId(),
+                        dto.courseId(),
+                        BigDecimal.valueOf(course.getPrice()),
+                        dto.paymentMethod()
+                )
         );
 
         enrolledCourseRepository.save(dto.toEntity());
@@ -57,8 +57,8 @@ public class EnrolledCourseService {
     public List<Course> getEnrolledCourses(Long userId) {
         List<EnrolledCourse> enrolledCourses = enrolledCourseRepository.findEnrolledCoursesByUserId(userId);
 
-        return courseRepository.findByIdsAndNotDeleted(
-            enrolledCourses.stream().map(EnrolledCourse::getCourseId).toList()
+        return courseRepository.findByIdsAndPublished(
+                enrolledCourses.stream().map(EnrolledCourse::getCourseId).toList()
         );
     }
 
@@ -70,12 +70,12 @@ public class EnrolledCourseService {
 
     private void validateAlreadyEnrolled(Long userId, Long courseId) {
         if (enrolledCourseRepository.existsByUserIdAndCourseId(userId, courseId)) {
-            throw BusinessException.builder(ExceptionCode.ALREADY_ENROLLED).build();
+            throw BusinessException.builder(ExceptionCode.ALREADY_ENROLLED).withId(courseId).build();
         }
     }
 
     private Course getCourseBy(Long courseId) {
         return courseRepository.findById(courseId)
-            .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND).build());
+                .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND).build());
     }
 }

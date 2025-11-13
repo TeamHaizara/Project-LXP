@@ -8,12 +8,13 @@ import com.example.projectlxp.controller.course.response.CourseResponse;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
-import com.example.projectlxp.model.course.CourseStatus;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
+import com.example.projectlxp.service.course.dto.CourseSearchCriteria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,9 +31,9 @@ public class CourseService {
 
     // 코스 생성
     @Transactional
-    public CourseDetailResponse createCourse(CourseCreateRequest requestDTO) {
+    public CourseDetailResponse createCourse(CourseCreateRequest requestDTO, Long userId) {
         Course course = new Course(
-                requestDTO.getInstructorId(),
+                userId,
                 requestDTO.getCategoryId(),
                 requestDTO.getTitle(),
                 requestDTO.getDescription(),
@@ -56,47 +57,24 @@ public class CourseService {
         return CourseDetailResponse.from(course);
     }
 
-    // 모든 코스 조회
-    public CourseListResponse getAllCourses() {
+    // 검색 조건으로 코스 조회 (동적 필터링)
+    // 모든 코스 조회 + 강사 필터 + 카테고리 필터 + 제목 키워드 필터
+    public CourseListResponse searchCourses(CourseSearchCriteria criteria) {
+        List<Course> courses = criteria.hasAnyFilter()
+                ? courseRepository.searchByCriteria(criteria)
+                : courseRepository.findAllPublished();
+
         return CourseListResponse.from(
-                courseRepository.findAllNotDeleted().stream()
+                courses.stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
     }
 
-    // 강사별 코스 조회
-    public CourseListResponse getCoursesByInstructor(Long instructorId) {
+    // 강사별 코스 조회 (관리용, all status)
+    public CourseListResponse getInstructorCourses(Long userId) {
         return CourseListResponse.from(
-                courseRepository.findByInstructorIdAndNotDeleted(instructorId).stream()
-                        .map(CourseResponse::from)
-                        .collect(Collectors.toList())
-        );
-    }
-
-    // 카테고리별 코스 조회
-    public CourseListResponse getCoursesByCategory(Long categoryId) {
-        return CourseListResponse.from(
-                courseRepository.findByCategoryIdAndNotDeleted(categoryId).stream()
-                        .map(CourseResponse::from)
-                        .collect(Collectors.toList())
-        );
-    }
-
-    // 상태별 코스 조회
-    public CourseListResponse getCoursesByStatus(String status) {
-        CourseStatus courseStatus = CourseStatus.from(status);
-        return CourseListResponse.from(
-                courseRepository.findByStatusAndNotDeleted(courseStatus).stream()
-                        .map(CourseResponse::from)
-                        .collect(Collectors.toList())
-        );
-    }
-
-    // 제목 검색
-    public CourseListResponse searchCoursesByTitle(String keyword) {
-        return CourseListResponse.from(
-                courseRepository.searchByTitleAndNotDeleted(keyword).stream()
+                courseRepository.findByInstructorIdAndNotDeleted(userId).stream()
                         .map(CourseResponse::from)
                         .collect(Collectors.toList())
         );
@@ -104,11 +82,12 @@ public class CourseService {
 
     // 코스 수정
     @Transactional
-    public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request) {
+    public CourseDetailResponse updateCourse(Long id, CourseUpdateRequest request, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         course.updateBasicInfo(
                 request.getTitle(),
                 request.getDescription(),
@@ -120,35 +99,46 @@ public class CourseService {
 
     // 코스 발행
     @Transactional
-    public CourseDetailResponse publishCourse(Long id) {
+    public CourseDetailResponse publishCourse(Long id, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         course.publish();
         return CourseDetailResponse.from(course);
     }
 
     // 코스 아카이빙
     @Transactional
-    public CourseDetailResponse archiveCourse(Long id) {
+    public CourseDetailResponse archiveCourse(Long id, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         course.archive();
         return CourseDetailResponse.from(course);
     }
 
     // 코스 삭제
     @Transactional
-    public void deleteCourse(Long id) {
+    public void deleteCourse(Long id, Long userId) {
         Course course = courseRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND)
                         .withId(id)
                         .build());
+        validateInstructorAccess(course, userId);
         int enrolledUserCount = enrolledCourseRepository.countByCourseId(id);
         course.delete(enrolledUserCount); // validation + status transition + cascade delete
+    }
+
+    private void validateInstructorAccess(Course course, Long userId) {
+        if (!course.isOwnedBy(userId)) {
+            throw BusinessException.builder(ExceptionCode.NOT_COURSE_INSTRUCTOR)
+                    .withId(userId, course.getId())
+                    .build();
+        }
     }
 
 }
