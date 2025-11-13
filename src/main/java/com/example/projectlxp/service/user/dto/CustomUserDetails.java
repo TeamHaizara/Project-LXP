@@ -1,5 +1,6 @@
-package com.example.projectlxp.model.user;
+package com.example.projectlxp.service.user.dto;
 
+import com.example.projectlxp.model.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
