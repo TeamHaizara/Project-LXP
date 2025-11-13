@@ -1,14 +1,23 @@
 package com.example.projectlxp.model.lecture;
 
-import com.example.projectlxp.exception.BusinessException;
-import com.example.projectlxp.controller.lecture.request.LectureUpdateRequest;
-import com.example.projectlxp.model.section.Section;
-import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
-
 import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.LECTURE_ALREADY_DELETED;
 import static com.example.projectlxp.model.lecture.exception.LectureExceptionCode.ORDER_NUMBER_UNDER_ZERO;
+
+import com.example.projectlxp.exception.BusinessException;
+import com.example.projectlxp.model.section.Section;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -45,7 +54,7 @@ public class Lecture {
     private boolean previewable = false;
 
     @Column(nullable = false)
-    private boolean status = false;
+    private boolean status = true;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -89,33 +98,33 @@ public class Lecture {
 
     // Soft delete method
     public void softDelete() {
-        this.status = true;
+        this.status = false;
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void updateDetails(LectureUpdateRequest requestDTO) {
+    public void updateDetails(String title, String description, Integer sortOrder, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
         validateDeleted();
 
-        if (requestDTO.getTitle() != null) {
-            this.title = requestDTO.getTitle();
+        if (title != null) {
+            this.title = title;
         }
-        if (requestDTO.getDescription() != null) {
-            this.description = requestDTO.getDescription();
+        if (description != null) {
+            this.description = description;
         }
-        if (requestDTO.getOrder() != null) {
-            updateOrder(requestDTO.getOrder());
+        if (sortOrder != null) {
+            updateOrder(sortOrder);
         }
-        if (requestDTO.getType() != null) {
-            this.type = requestDTO.getType();
+        if (type != null) {
+            this.type = type;
         }
-        if (requestDTO.getResourcePath() != null) {
-            this.resourcePath = requestDTO.getResourcePath();
+        if (resourcePath != null) {
+            this.resourcePath = resourcePath;
         }
-        if (requestDTO.getDuration() != null) {
-            this.duration = requestDTO.getDuration();
+        if (duration != null) {
+            this.duration = duration;
         }
-        if (requestDTO.getIsPreviewable() != null) {
-            this.previewable = requestDTO.getIsPreviewable();
+        if (isPreviewable != null) {
+            this.previewable = isPreviewable;
         }
     }
 
@@ -138,7 +147,6 @@ public class Lecture {
         }
     }
 
-
     public boolean getStatus() {
         return status;
     }
@@ -147,7 +155,7 @@ public class Lecture {
         return deletedAt;
     }
 
-    // Getters and Setters
+    // Getters
     public Long getId() {
         return id;
     }
@@ -160,11 +168,9 @@ public class Lecture {
         return section;
     }
 
-
     public String getTitle() {
         return title;
     }
-
 
     public String getDescription() {
         return description;
@@ -173,7 +179,6 @@ public class Lecture {
     public Integer getSortOrder() {
         return sortOrder;
     }
-
 
     public LectureType getType() {
         return type;

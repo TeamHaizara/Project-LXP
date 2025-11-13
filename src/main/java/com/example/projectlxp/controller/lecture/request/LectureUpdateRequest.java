@@ -4,7 +4,7 @@ import com.example.projectlxp.model.lecture.LectureType;
 import jakarta.validation.constraints.Min;
 
 public class LectureUpdateRequest {
-
+    private Long lectureId;
     private String title;
     private String description;
     private Integer order;
@@ -14,23 +14,28 @@ public class LectureUpdateRequest {
     @Min(value = 0, message = "영상 길이는 0 이상이어야 합니다.")
     private Integer duration;
 
-    private Boolean isPreviewable;
+    private Boolean previewable;
 
     // Constructors
     public LectureUpdateRequest() {
     }
 
-    public LectureUpdateRequest(String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
+    public LectureUpdateRequest(Long lectureId, String title, String description, Integer order, LectureType type, String resourcePath, Integer duration, Boolean previewable) {
+        this.lectureId = lectureId;
         this.title = title;
         this.description = description;
         this.order = order;
         this.type = type;
         this.resourcePath = resourcePath;
         this.duration = duration;
-        this.isPreviewable = isPreviewable;
+        this.previewable = previewable;
     }
 
     // Getters and Setters
+    public Long getLectureId() {
+        return lectureId;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -55,8 +60,8 @@ public class LectureUpdateRequest {
         return duration;
     }
 
-    public Boolean getIsPreviewable() {
-        return isPreviewable;
+    public Boolean getPreviewable() {
+        return previewable;
     }
 
 }
