@@ -3,7 +3,7 @@ package com.example.projectlxp.service.user;
 import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.repository.user.UserRepository;
-import com.example.projectlxp.service.user.dto.CustomUserDetails;
+import com.example.projectlxp.model.user.CustomUserDetails;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
