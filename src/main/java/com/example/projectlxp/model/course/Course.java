@@ -75,6 +75,10 @@ public class Course {
         return deletedAt != null;
     }
 
+    public boolean isOwnedBy(Long instructorId) {
+        return this.instructorId.equals(instructorId);
+    }
+
     // Business logic methods
     public void updateBasicInfo(String title, String description, Integer price, Long categoryId) {
         if (title != null) {

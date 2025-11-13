@@ -108,10 +108,10 @@ public class CategoryServiceImpl implements CategoryService {
      * @param categoryId 검증할 카테고리 ID
      */
     private void validateCategoryHasNoCourses(Long categoryId) {
-        if (!courseRepository.findByCategoryIdAndNotDeleted(categoryId).isEmpty()) {
+        if (!courseRepository.findByCategoryIdAndPublished(categoryId).isEmpty()) {
             throw BusinessException.builder(ExceptionCode.CATEGORY_HAS_COURSES)
-                .withId(categoryId)
-                .build();
+                    .withId(categoryId)
+                    .build();
         }
     }
 }
