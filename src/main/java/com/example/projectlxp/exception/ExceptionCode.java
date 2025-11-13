@@ -29,6 +29,7 @@ public enum ExceptionCode implements ErrorCode {
 
     // Enrolled course
     ALREADY_ENROLLED(HttpStatus.BAD_REQUEST, "Already enrolled"),
+    COURSE_BELONGS_TO_USER(HttpStatus.BAD_REQUEST, "Course belongs to user, userId: %d, courseId: %d"),
 
     // Common
     NOT_NULL_FIELD_IS_NULL(HttpStatus.BAD_REQUEST, "Not null field is null."),

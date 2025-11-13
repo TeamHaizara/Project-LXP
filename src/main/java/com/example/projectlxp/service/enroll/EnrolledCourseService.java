@@ -4,6 +4,7 @@ import com.example.projectlxp.exception.BusinessException;
 import com.example.projectlxp.exception.ExceptionCode;
 import com.example.projectlxp.model.course.Course;
 import com.example.projectlxp.model.enroll.EnrolledCourse;
+import com.example.projectlxp.model.user.User;
 import com.example.projectlxp.repository.course.CourseRepository;
 import com.example.projectlxp.repository.enroll.EnrolledCourseRepository;
 import com.example.projectlxp.repository.user.UserRepository;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,8 +39,7 @@ public class EnrolledCourseService {
 
     @Transactional
     public void enroll(EnrollCourseServiceDto dto) {
-        validateExistUser(dto.userId());
-        validateAlreadyEnrolled(dto.userId(), dto.courseId());
+        validateBeforeEnroll(dto.userId(), dto.courseId());
 
         Course course = getCourseBy(dto.courseId());
 
@@ -62,10 +63,13 @@ public class EnrolledCourseService {
         );
     }
 
-    private void validateExistUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw BusinessException.builder(ExceptionCode.USER_NOT_FOUND).withId(userId).build();
-        }
+    private void validateBeforeEnroll(Long userId, Long courseId) {
+        validateAlreadyEnrolled(userId, courseId);
+
+        User foundUser = getUserBy(userId);
+        Course foundCourse = getCourseBy(courseId);
+
+        validateCourseBelongsToUser(foundUser, foundCourse);
     }
 
     private void validateAlreadyEnrolled(Long userId, Long courseId) {
@@ -77,5 +81,22 @@ public class EnrolledCourseService {
     private Course getCourseBy(Long courseId) {
         return courseRepository.findById(courseId)
             .orElseThrow(() -> BusinessException.builder(ExceptionCode.COURSE_NOT_FOUND).build());
+    }
+
+    private User getUserBy(Long userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.USER_NOT_FOUND).withId(userId).build());
+    }
+
+    private void validateCourseBelongsToUser(User user, Course course) {
+        if (isOwner(user.getUserId(), course.getInstructorId())) {
+            throw BusinessException.builder(ExceptionCode.COURSE_BELONGS_TO_USER).withId(
+                user.getUserId(),course.getId()
+            ).build();
+        }
+    }
+
+    private boolean isOwner(Long userId, Long courseId) {
+        return Objects.equals(userId, courseId);
     }
 }
