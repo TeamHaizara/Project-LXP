@@ -93,29 +93,29 @@ public class Lecture {
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void updateDetails(LectureUpdateRequest requestDTO) {
+    public void updateDetails(String title, String description, Integer sortOrder, LectureType type, String resourcePath, Integer duration, Boolean isPreviewable) {
         validateDeleted();
 
-        if (requestDTO.getTitle() != null) {
-            this.title = requestDTO.getTitle();
+        if (title != null) {
+            this.title = title;
         }
-        if (requestDTO.getDescription() != null) {
-            this.description = requestDTO.getDescription();
+        if (description != null) {
+            this.description = description;
         }
-        if (requestDTO.getOrder() != null) {
-            updateOrder(requestDTO.getOrder());
+        if (sortOrder != null) {
+            updateOrder(sortOrder);
         }
-        if (requestDTO.getType() != null) {
-            this.type = requestDTO.getType();
+        if (type != null) {
+            this.type = type;
         }
-        if (requestDTO.getResourcePath() != null) {
-            this.resourcePath = requestDTO.getResourcePath();
+        if (resourcePath != null) {
+            this.resourcePath = resourcePath;
         }
-        if (requestDTO.getDuration() != null) {
-            this.duration = requestDTO.getDuration();
+        if (duration != null) {
+            this.duration = duration;
         }
-        if (requestDTO.getIsPreviewable() != null) {
-            this.previewable = requestDTO.getIsPreviewable();
+        if (isPreviewable != null) {
+            this.previewable = isPreviewable;
         }
     }
 

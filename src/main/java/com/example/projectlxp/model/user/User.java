@@ -21,7 +21,7 @@ public class User {
     @Column(nullable = false)
     private String nickname;
 
-    @Column // 일단
+    @Column
     private String interest;
 
     @ElementCollection(fetch = FetchType.EAGER)
