@@ -114,4 +114,8 @@ public class User {
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
+
+    public void promote() {
+        roles = List.of(Role.ROLE_INSTRUCTOR);
+    }
 }

@@ -1,13 +1,16 @@
 package com.example.projectlxp.controller.user;
 
+import com.example.projectlxp.controller.user.dto.request.UserRequest;
 import com.example.projectlxp.controller.user.dto.response.LoginResponse;
 import com.example.projectlxp.controller.user.dto.request.LoginRequest;
 import com.example.projectlxp.controller.user.dto.request.SignupRequest;
 import com.example.projectlxp.controller.user.dto.response.UserResponse;
 import com.example.projectlxp.service.user.AuthService;
 import com.example.projectlxp.service.user.UserService;
+import com.example.projectlxp.service.user.dto.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,5 +38,11 @@ public class AuthController {
     public LoginResponse login(@RequestBody LoginRequest loginRequest) {
 
         return authService.login(loginRequest);
+    }
+
+    //intructor로 변경
+    @PutMapping("/promote")
+    public void promoteInstructor(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        authService.promoteInstructor(userDetails.getUserId());
     }
 }

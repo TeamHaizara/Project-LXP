@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
 
@@ -83,5 +85,13 @@ public class AuthService {
                         .build());
 
         return LoginResponse.of(accessToken, ACCESS_EXPIRE_MS, user);
+    }
+
+    @Transactional
+    public void promoteInstructor(Long userId) {
+        User user = userRepository.findByUserId(userId)
+            .orElseThrow(() -> BusinessException.builder(ExceptionCode.USER_NOT_FOUND).build());
+
+        user.promote();
     }
 }

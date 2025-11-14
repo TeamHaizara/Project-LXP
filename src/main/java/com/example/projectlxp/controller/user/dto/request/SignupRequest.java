@@ -3,6 +3,7 @@ package com.example.projectlxp.controller.user.dto.request;
 import com.example.projectlxp.model.user.Role;
 import com.example.projectlxp.model.user.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SignupRequest {
@@ -11,7 +12,6 @@ public class SignupRequest {
     private String password;
     private String nickname;
     private String interest;
-    private List<Role> roles;
 
     public SignupRequest(){}
 
@@ -31,11 +31,7 @@ public class SignupRequest {
         return interest;
     }
 
-    public List<Role> getRoles() {
-        return roles;
-    }
-
     public User toDomain(String encodedPassword) {
-        return new User(username,encodedPassword,nickname,interest,roles);
+        return new User(username,encodedPassword,nickname,interest,List.of(Role.ROLE_LEARNER));
     }
 }
